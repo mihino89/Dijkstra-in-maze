@@ -9,6 +9,8 @@
 #define TRUE	1
 #define FALSE	0
 
+#define FOREST_PATH_VALUE 1
+
 typedef struct coordinates_{
     int x;
     int y;
@@ -30,7 +32,7 @@ typedef struct path_node{
     int id;
     int cost;
     int known;
-    COORDINATES *position;
+    COORDINATES position;
     struct path_node *next;
 } PATH_NODE;
 
