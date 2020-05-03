@@ -5,10 +5,16 @@ int main(int argc, char const *argv[]){
     char **testing;
     testing = (char **)malloc(4 * sizeof(char *));
 
+    /* BUG */
+    // char mapa[4][4]={{'C','N','P','N'},
+    //                  {'C','C','H','D'},
+    //                  {'N','C','N','H'},
+    //                  {'N','P','H','C'}};
+
     char mapa[4][4]={{'C','N','P','N'},
                      {'C','C','H','D'},
                      {'N','C','N','H'},
-                     {'N','C','H','C'}};
+                     {'N','P','H','N'}};
 
     for (int i = 0; i < 4;  i++){
         testing[i] = (char *)malloc(4 * sizeof(char));
