@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h> 
-#include "popolvar.h"
+#include "graph.h"
 
 
 PATH *init_path(int maze_width, int maze_height){
@@ -38,12 +38,11 @@ PATH_NODE *init_path_node(int id, int path_node_cost, int pos_y, int pos_x, int 
 
 
 /* prida novy node do pola ako path root */
-PATH *actualize_path(PATH *path, PATH_NODE *check_node, int index){
-    // printf("actualize_path - index: %d\n", index);
-    path[index].path_root = check_node;
-    path[index].path_root->next = NULL;
+MAZE *actualize_path(MAZE *maze, PATH_NODE *check_node, int index){
+    maze->path[index].path_root = check_node;
+    maze->path[index].path_root->next = NULL;
 
-    return path;
+    return maze;
 }
 
 int check_node_neighbors(MAZE *maze, char **map, int x, int y){
@@ -63,20 +62,21 @@ int check_node_neighbors(MAZE *maze, char **map, int x, int y){
     return FALSE;
 }
 
-PATH *create_edge(PATH *path, PATH_NODE *src, PATH_NODE *dst, int index){
+MAZE *create_edge(MAZE *maze, PATH_NODE *src, PATH_NODE *dst, int index){
     int i = 0;
-    PATH_NODE *current;
+    PATH_NODE *current = maze->path[index].path_root;
 
     /* prechadzam pole path az nakoniec (verticalne) */
-    current = path[index].path_root;
-
-    while(current->next != NULL ){
+    while(current->next != NULL )
         current = current->next;
-    }
+    
     current->next = dst;
-    dst->next = NULL;
 
-    return path;
+    // if(maze->path[10].path_root != NULL){
+    //     printf("maze->path[10].path_root != NULL !!!!!!!!!! [%d, %d]\n", maze->path[10].path_root->position.y, maze->path[10].path_root->position.x);
+    // }
+
+    return maze;
 
 }
 
@@ -93,47 +93,65 @@ MAZE *add_neighboor_to_path(MAZE *maze, PATH_NODE *new_node, int neighboor_value
     else
         neighboor_node = init_path_node(y * 10 + x, neighboor_value, y, x, FALSE);
     
-
-    maze->path = create_edge(maze->path, new_node, neighboor_node, index);
+    maze = create_edge(maze, new_node, neighboor_node, index);
     return maze;
 }
 
 MAZE *create_vertex(MAZE *maze, PATH_NODE *new_node, char **map, int index){
     PATH_NODE *neighboor_node;
+    PATH_NODE *current = NULL;
     int neighboor_value, x, y;
 
     /* pridaj novy path root na prvy volny index v path */  
-    if(index ==  10){
-        printf("BUG - path[0] = [%d, %d] path[0]->next = [%d, %d]\n", maze->path[0].path_root->position.y, maze->path[0].path_root->position.x, maze->path[0].path_root->next->position.y, maze->path[0].path_root->next->position.x);
-        printf("BUG - new node path[%d] = [%d, %d]\n", index, new_node->position.y, new_node->position.x);
-        maze->path[index].path_root = new_node;
-        printf("BUG - path[0] = [%d, %d] path[0]->next = [%d, %d]\n\n", maze->path[0].path_root->position.y, maze->path[0].path_root->position.x, maze->path[0].path_root->next->position.y, maze->path[0].path_root->next->position.x);
-        maze->path[index].path_root->next = NULL;
-    } else {
-        maze->path = actualize_path(maze->path, new_node, index);
-    }
-    
+    maze = actualize_path(maze, new_node, index);
+    // if(index ==  10){
+    //     printf("BUG - path[0] = [%d, %d] path[0]->next = [%d, %d]\n", maze->path[0].path_root->position.y, maze->path[0].path_root->position.x, maze->path[0].path_root->next->position.y, maze->path[0].path_root->next->position.x);
+    //     printf("BUG - new node path[%d] = [%d, %d]\n", index, new_node->position.y, new_node->position.x);
+    //     if(maze->path[index].path_root == NULL){
+    //         printf("haha som NULL\n");
+    //     } else{
+    //         printf("path[%d] = [%d, %d]\n",index, maze->path[index].path_root->position.y, maze->path[index].path_root->position.y);
+    //     }
+    //     // for (int i = 0; i <= index; i++){
+    //     //     printf("path[%d] = [%d, %d]\n",i, maze->path[i].path_root->position.y, maze->path[i].path_root->position.x);
+    //     // }
+
+    //     maze->path[index].path_root = new_node;
+    //     printf("BUG - path[0] = [%d, %d] path[0]->next = [%d, %d]\n\n", maze->path[0].path_root->position.y, maze->path[0].path_root->position.x, maze->path[0].path_root->next->position.y, maze->path[0].path_root->next->position.x);
+    //     maze->path[index].path_root->next = NULL;
+    // } else {
+    //     maze = actualize_path(maze, new_node, index);
+    // }
+
     x = new_node->position.x;
     y = new_node->position.y;
 
-    /* este nieje v poli path ako root->path */
+    /* smer - Vychod */
     neighboor_value = check_node_neighbors(maze, map, x + 1, y);
     maze = add_neighboor_to_path(maze, new_node, neighboor_value, index, y, (x + 1));
 
-    /* uz by mal byt v poli path ako root->path */
+    /* smer - Zapad */
     neighboor_value = check_node_neighbors(maze, map, x - 1, y);
     maze = add_neighboor_to_path(maze, new_node, neighboor_value, index, y, (x - 1));
   
-
-    /* este nieje v poli path ako root->path */
+    /* smer - Sever */
     neighboor_value = check_node_neighbors(maze, map, x, y + 1);
     maze = add_neighboor_to_path(maze, new_node, neighboor_value, index, (y + 1), x);
    
-    /* uz by mal byt v poli path ako root->path */
+    /* smer - Juh */
     neighboor_value = check_node_neighbors(maze, map, x, y - 1);
     maze = add_neighboor_to_path(maze, new_node, neighboor_value, index, (y - 1), x);
-    
-    // printf("1na danom indexe je: [%d, %d] [%d, %d]\n", maze->path[0].path_root->position.y, maze->path[0].path_root->position.x, maze->path[0].path_root->next->position.y, maze->path[0].path_root->next->position.x);
+
+    // printf("----- Priebezny vypis grafu!! -----\n");
+    // for (int i = 0; i <= index; i++){
+    //     printf("i:%d ", i);
+    //     current = maze->path[i].path_root;
+    //     while(current->next != NULL ){
+    //         printf(" [%d, %d] ->", current->position.y, current->position.x);
+    //         current = current->next;
+    //     }
+    //     printf(" [%d, %d]\n", current->position.y, current->position.x);
+    // }
 
     return maze;
 }
@@ -145,17 +163,17 @@ MAZE *load_maze(char **mapa, MAZE *maze){
     for (y = 0; y < maze->height; y++){
         for (x = 0; x < maze->width; x++){
             if (mapa[y][x] == FOREST_PATH || mapa[y][x] == SLOW_WAY || mapa[y][x] == PRINC || mapa[y][x] == DRAG){
-                if(mapa[y][x] == FOREST_PATH){
+
+                if(mapa[y][x] == FOREST_PATH)
                     new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x, FALSE);
-                }
-                else if(mapa[y][x] == PRINC){
+                
+                else if(mapa[y][x] == PRINC)
                     new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x, TRUE);
-                }
+                
                 else
                     new_node = init_path_node(y * 10 + x, SLOW_PATH_VALUE, y, x, FALSE);
 
                 maze = create_vertex(maze, new_node, mapa, num_of_nodes);
-                // printf("!!na danom indexe je: [%d, %d] [%d, %d]\n", maze->path[0].path_root->position.y, maze->path[0].path_root->position.x, maze->path[0].path_root->next->position.y, maze->path[0].path_root->next->position.x);
 
                 num_of_nodes++;
             }

@@ -1,4 +1,4 @@
-#include "popolvar.c"
+#include "graph.c"
 
 int main(int argc, char const *argv[]){
     int *postupnost = (int *)malloc(16 * sizeof(int));
