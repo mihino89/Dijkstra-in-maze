@@ -187,7 +187,7 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     printf("Drak coordinates: [%d, %d] \n\n", maze->dragon->path_node.position.y, maze->dragon->path_node.position.x);
 
     for (i = 0; i < maze->nodes_num; i++){
-        printf("i:%d path cost: %d", i, maze->path[i].cost);
+        printf("i:%d id: %d path cost: %d known: %d", i, maze->path[i].path_root->id, maze->path[i].cost, maze->path[i].path_root->known);
         current = maze->path[i].path_root;
         while(current->next != NULL ){
             printf(" [%d, %d] ->", current->position.y, current->position.x);
