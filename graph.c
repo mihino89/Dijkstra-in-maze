@@ -1,15 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h> 
 #include "graph.h"
-
+#include "dijkstra.c"
 
 PATH *init_path(int maze_width, int maze_height){
-    PATH *path = (PATH *)malloc((maze_width + maze_height) * sizeof(PATH));
-    path->cost = 0;
+    PATH *path = (PATH *)malloc((maze_width * maze_height) * sizeof(PATH));
 
-    for (int i = 0; i < maze_width + maze_height; i++)
-        path->path_root = NULL;
-    
+    for (int i = 0; i < maze_width * maze_height; i++){
+        path[i].path_root = NULL;
+        path[i].cost = INFINITY;
+    }
+
     return path;
 }
 
@@ -31,11 +30,25 @@ PATH_NODE *init_path_node(int id, int path_node_cost, int pos_y, int pos_x, int 
     path_node->is_princess = is_princess;
     path_node->position.x = pos_x;
     path_node->position.y = pos_y;
+    path_node->known = FALSE;
     path_node->next = NULL;
 
     return path_node;
 }
 
+DRAGON *init_dragon(int id, int pos_y, int pos_x, int t){
+    DRAGON *init_dragon = (DRAGON *)malloc(sizeof(DRAGON));
+
+    init_dragon->t = t;
+    init_dragon->path_node.cost = 1;
+    init_dragon->path_node.is_princess = FALSE;
+    init_dragon->path_node.position.y = pos_y;
+    init_dragon->path_node.position.x = pos_x;
+    init_dragon->path_node.id = id;
+    init_dragon->path_node.known = FALSE;
+
+    return init_dragon;
+}
 
 /* prida novy node do pola ako path root */
 MAZE *actualize_path(MAZE *maze, PATH_NODE *check_node, int index){
@@ -72,10 +85,6 @@ MAZE *create_edge(MAZE *maze, PATH_NODE *src, PATH_NODE *dst, int index){
     
     current->next = dst;
 
-    // if(maze->path[10].path_root != NULL){
-    //     printf("maze->path[10].path_root != NULL !!!!!!!!!! [%d, %d]\n", maze->path[10].path_root->position.y, maze->path[10].path_root->position.x);
-    // }
-
     return maze;
 
 }
@@ -104,24 +113,6 @@ MAZE *create_vertex(MAZE *maze, PATH_NODE *new_node, char **map, int index){
 
     /* pridaj novy path root na prvy volny index v path */  
     maze = actualize_path(maze, new_node, index);
-    // if(index ==  10){
-    //     printf("BUG - path[0] = [%d, %d] path[0]->next = [%d, %d]\n", maze->path[0].path_root->position.y, maze->path[0].path_root->position.x, maze->path[0].path_root->next->position.y, maze->path[0].path_root->next->position.x);
-    //     printf("BUG - new node path[%d] = [%d, %d]\n", index, new_node->position.y, new_node->position.x);
-    //     if(maze->path[index].path_root == NULL){
-    //         printf("haha som NULL\n");
-    //     } else{
-    //         printf("path[%d] = [%d, %d]\n",index, maze->path[index].path_root->position.y, maze->path[index].path_root->position.y);
-    //     }
-    //     // for (int i = 0; i <= index; i++){
-    //     //     printf("path[%d] = [%d, %d]\n",i, maze->path[i].path_root->position.y, maze->path[i].path_root->position.x);
-    //     // }
-
-    //     maze->path[index].path_root = new_node;
-    //     printf("BUG - path[0] = [%d, %d] path[0]->next = [%d, %d]\n\n", maze->path[0].path_root->position.y, maze->path[0].path_root->position.x, maze->path[0].path_root->next->position.y, maze->path[0].path_root->next->position.x);
-    //     maze->path[index].path_root->next = NULL;
-    // } else {
-    //     maze = actualize_path(maze, new_node, index);
-    // }
 
     x = new_node->position.x;
     y = new_node->position.y;
@@ -142,22 +133,12 @@ MAZE *create_vertex(MAZE *maze, PATH_NODE *new_node, char **map, int index){
     neighboor_value = check_node_neighbors(maze, map, x, y - 1);
     maze = add_neighboor_to_path(maze, new_node, neighboor_value, index, (y - 1), x);
 
-    // printf("----- Priebezny vypis grafu!! -----\n");
-    // for (int i = 0; i <= index; i++){
-    //     printf("i:%d ", i);
-    //     current = maze->path[i].path_root;
-    //     while(current->next != NULL ){
-    //         printf(" [%d, %d] ->", current->position.y, current->position.x);
-    //         current = current->next;
-    //     }
-    //     printf(" [%d, %d]\n", current->position.y, current->position.x);
-    // }
-
     return maze;
 }
 
-MAZE *load_maze(char **mapa, MAZE *maze){
+MAZE *load_maze(MAZE *maze, char **mapa, int t){
     PATH_NODE *new_node;
+    DRAGON *drak;
     int y, x, num_of_nodes = 0, num_of_princess = 0;
 
     for (y = 0; y < maze->height; y++){
@@ -167,9 +148,15 @@ MAZE *load_maze(char **mapa, MAZE *maze){
                 if(mapa[y][x] == FOREST_PATH)
                     new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x, FALSE);
                 
-                else if(mapa[y][x] == PRINC)
+                else if(mapa[y][x] == PRINC){
                     new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x, TRUE);
-                
+                    num_of_princess++;
+                }
+                else if(mapa[y][x] == DRAG){
+                    drak = init_dragon(y * 10 + x, y, x, t);
+                    maze->dragon = drak;
+                    new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x, FALSE);
+                }
                 else
                     new_node = init_path_node(y * 10 + x, SLOW_PATH_VALUE, y, x, FALSE);
 
@@ -180,7 +167,7 @@ MAZE *load_maze(char **mapa, MAZE *maze){
         }
     }
     maze->nodes_num = num_of_nodes;
-    // printf("num of nodes: %d\n", num_of_nodes);
+    maze->princess_num = num_of_princess;
 
     return maze;
 }
@@ -190,13 +177,17 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     PATH_NODE *current = NULL;
 
     MAZE *maze = init_maze(m, n);
-    maze = load_maze(mapa, maze);
+    maze = load_maze(maze, mapa, t);
 
-    // printf("num of nodes: [%d, %d]\n", maze->path[0].path_root->next->position.y, maze->path[0].path_root->next->position.x);
-
+    maze = dijkstra(maze);
+    
     printf("----- Konecny vypis grafu!! -----\n");
+    printf("Number of nodes in path: %d \n", maze->nodes_num);
+    printf("Number of princess: %d \n", maze->princess_num);
+    printf("Drak coordinates: [%d, %d] \n\n", maze->dragon->path_node.position.y, maze->dragon->path_node.position.x);
+
     for (i = 0; i < maze->nodes_num; i++){
-        printf("i:%d ", i);
+        printf("i:%d path cost: %d", i, maze->path[i].cost);
         current = maze->path[i].path_root;
         while(current->next != NULL ){
             printf(" [%d, %d] ->", current->position.y, current->position.x);
