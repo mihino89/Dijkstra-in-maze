@@ -1,4 +1,5 @@
 #include "dijkstra.h"
+#include "binary_heap.c"
 
 MAZE *init_starting_vertex(MAZE *maze, int index){
     maze->path[index].cost = 0;
@@ -31,8 +32,11 @@ int smallest_cost_in_path(MAZE *maze){
 MAZE *change_path_cost(MAZE *maze, PATH_NODE *path_node, int root_path_cost){
     for (int i = 0; i < maze->nodes_num; i++){
         if(maze->path[i].path_root->id == path_node->id){
-            if(maze->path[i].path_root->known == FALSE && path_node->cost + root_path_cost < maze->path[i].cost)
+            if(maze->path[i].path_root->known == FALSE && path_node->cost + root_path_cost < maze->path[i].cost){
                 maze->path[i].cost = path_node->cost + root_path_cost;
+                printf("cost do haldy: %d\n", maze->path[i].cost);
+                // tu vloz do binarnej haldy
+            }
             return maze;
         }
     }
@@ -45,7 +49,7 @@ MAZE *change_path_cost(MAZE *maze, PATH_NODE *path_node, int root_path_cost){
 MAZE *find_and_update_neighboor(MAZE *maze, PATH_NODE *current_path_node, int cost){
 
     while(current_path_node != NULL){
-        printf("current vertex: [%d, %d]\n", current_path_node->position.y, current_path_node->position.x);
+        // printf("current vertex: [%d, %d]\n", current_path_node->position.y, current_path_node->position.x);
         maze = change_path_cost(maze, current_path_node, cost);
         current_path_node = current_path_node->next;
     }
@@ -55,14 +59,18 @@ MAZE *find_and_update_neighboor(MAZE *maze, PATH_NODE *current_path_node, int co
 
 MAZE *dijkstra(MAZE *maze){
     PATH_NODE *current;
+    HEAP *heap;
 
+    heap = init_heap(maze->nodes_num);
     maze = init_starting_vertex(maze, 0);
+    
     maze = find_and_update_neighboor(maze, maze->path[0].path_root->next, maze->path[0].cost);
 
     int index;
 
+    // vyberam kym je nieco v halde
     while((index = smallest_cost_in_path(maze)) != -1){
-        printf("index: %d\n", index);
+        // printf("index: %d\n", index);
         maze = set_known_root_node(maze, index);
         maze = find_and_update_neighboor(maze, maze->path[index].path_root->next, maze->path[index].cost);
         // break;
