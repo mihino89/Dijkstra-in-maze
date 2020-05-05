@@ -7,5 +7,7 @@ typedef struct heap_node{
 } HEAP_NODE;
 
 typedef struct heap{
+    int heap_act_size;
+    int heap_max_size;
     HEAP_NODE *heap_node;
 } HEAP;

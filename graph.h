@@ -60,6 +60,7 @@ typedef struct maze{
     PATH *path;
 } MAZE;
 
+
 PATH *init_path(int maze_width, int maze_height);
 MAZE *init_maze(int maze_width, int maze_height);
 PATH_NODE *init_path_node(int id, int path_node_cost, int pos_y, int pos_x, int is_princess);
