@@ -7,6 +7,8 @@ PATH *init_path(int maze_width, int maze_height){
     for (int i = 0; i < maze_width * maze_height; i++){
         path[i].path_root = NULL;
         path[i].cost = INFINITY;
+        path[i].known = FALSE;
+        path[i].src_path_root = -1;
     }
 
     return path;
@@ -30,22 +32,18 @@ PATH_NODE *init_path_node(int id, int path_node_cost, int pos_y, int pos_x, int 
     path_node->is_princess = is_princess;
     path_node->position.x = pos_x;
     path_node->position.y = pos_y;
-    path_node->known = FALSE;
     path_node->next = NULL;
 
     return path_node;
 }
 
-DRAGON *init_dragon(int id, int pos_y, int pos_x, int t){
+DRAGON *init_dragon(int t, int index, int pos_y, int pos_x){
     DRAGON *init_dragon = (DRAGON *)malloc(sizeof(DRAGON));
 
     init_dragon->t = t;
-    init_dragon->path_node.cost = 1;
-    init_dragon->path_node.is_princess = FALSE;
-    init_dragon->path_node.position.y = pos_y;
-    init_dragon->path_node.position.x = pos_x;
-    init_dragon->path_node.id = id;
-    init_dragon->path_node.known = FALSE;
+    init_dragon->index = index;
+    init_dragon->position.y = pos_y;
+    init_dragon->position.x = pos_x;
 
     return init_dragon;
 }
@@ -153,7 +151,7 @@ MAZE *load_maze(MAZE *maze, char **mapa, int t){
                     num_of_princess++;
                 }
                 else if(mapa[y][x] == DRAG){
-                    drak = init_dragon(y * 10 + x, y, x, t);
+                    drak = init_dragon(t, num_of_nodes, y, x);
                     maze->dragon = drak;
                     new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x, FALSE);
                 }
@@ -184,10 +182,10 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     printf("----- Konecny vypis grafu!! -----\n");
     printf("Number of nodes in path: %d \n", maze->nodes_num);
     printf("Number of princess: %d \n", maze->princess_num);
-    printf("Drak coordinates: [%d, %d] \n\n", maze->dragon->path_node.position.y, maze->dragon->path_node.position.x);
+    printf("Drak coordinates: [%d, %d] \n\n", maze->dragon->position.y, maze->dragon->position.x);
 
     for (i = 0; i < maze->nodes_num; i++){
-        printf("i:%d id: %d path cost: %d known: %d", i, maze->path[i].path_root->id, maze->path[i].cost, maze->path[i].path_root->known);
+        printf("i:%d id: %d path cost: %d known: %d src path node: %d", i, maze->path[i].path_root->id, maze->path[i].cost, maze->path[i].known, maze->path[i].src_path_root);
         current = maze->path[i].path_root;
         while(current->next != NULL ){
             printf(" [%d, %d] ->", current->position.y, current->position.x);

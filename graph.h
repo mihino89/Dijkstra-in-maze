@@ -30,7 +30,6 @@ typedef struct coordinates_{
 typedef struct path_node{
     int id;
     int cost;
-    int known;
     int is_princess;
     COORDINATES position;
     struct path_node *next;
@@ -39,13 +38,16 @@ typedef struct path_node{
 
 typedef struct dragones_{
     int t;
-    PATH_NODE path_node;
+    int index;
+    COORDINATES position;
 } DRAGON;
 
 
 /* Path in adjacency list */
 typedef struct path{
     int cost;
+    int src_path_root;
+    int known;
     PATH_NODE *path_root;
 } PATH;
 
@@ -64,7 +66,7 @@ typedef struct maze{
 PATH *init_path(int maze_width, int maze_height);
 MAZE *init_maze(int maze_width, int maze_height);
 PATH_NODE *init_path_node(int id, int path_node_cost, int pos_y, int pos_x, int is_princess);
-DRAGON *init_dragon(int id, int pos_y, int pos_x, int t);
+DRAGON *init_dragon(int t, int index, int pos_y, int pos_x);
 
 MAZE *actualize_path(MAZE *maze, PATH_NODE *check_node, int index);
 int check_node_neighbors(MAZE *maze, char **map, int x, int y);
