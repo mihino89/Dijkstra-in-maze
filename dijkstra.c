@@ -41,15 +41,15 @@ void find_and_update_neighboor(MAZE *maze, PATH_NODE *current_path_node, HEAP *h
     }
 }
 
-MAZE *dijkstra(MAZE *maze){
+MAZE *dijkstra(MAZE *maze, int starting_index){
     PATH_NODE *current;
     HEAP *heap;
     int *index = (int *)malloc(sizeof(int));
 
     heap = init_heap(maze->nodes_num);
-    init_starting_vertex(maze, 0);
+    init_starting_vertex(maze, starting_index);
 
-    find_and_update_neighboor(maze, maze->path[0].path_root->next, heap, maze->path[0].cost, 0);
+    find_and_update_neighboor(maze, maze->path[starting_index].path_root->next, heap, maze->path[starting_index].cost, starting_index);
 
     /* vyberam kym je nieco v halde */
     while((heap = push_and_pop_min(heap, index)) != NULL){

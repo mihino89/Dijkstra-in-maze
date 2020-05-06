@@ -16,10 +16,22 @@ PATH *init_path(int maze_width, int maze_height){
 }
 
 
+int *init_princess_index_arr(){
+    int *arr = (int *)malloc(MAX_NUM_OF_PRINCESS * sizeof(int));
+
+    for (int i = 0; i < MAX_NUM_OF_PRINCESS; i++)
+        arr[i] = -1;
+
+    return arr;
+}
+
 MAZE *init_maze(int maze_width, int maze_height){
     MAZE *maze = (MAZE *)malloc(sizeof(MAZE));
     maze->width = maze_width;
     maze->height = maze_height;
+
+    maze->princess_num = maze->nodes_num = 0;
+    maze->princess_index_arr = init_princess_index_arr();
 
     maze->path = init_path(maze_width, maze_height);
     maze->dragon = NULL;
@@ -28,11 +40,18 @@ MAZE *init_maze(int maze_width, int maze_height){
 }
 
 
-PATH_NODE *init_path_node(int id, int path_node_cost, int pos_y, int pos_x, int is_princess){
+void re_init_maze(MAZE *maze){
+    for (int i = 0; i < maze->nodes_num; i++){
+        maze->path[i].known = FALSE;
+        maze->path[i].cost = INFINITY;
+        maze->path[i].src_path_root = -1;
+    }
+}
+
+PATH_NODE *init_path_node(int id, int path_node_cost, int pos_y, int pos_x){
     PATH_NODE *path_node = (PATH_NODE *)malloc(sizeof(PATH_NODE));
     path_node->id = id;
     path_node->cost = path_node_cost;
-    path_node->is_princess = is_princess;
     path_node->position.x = pos_x;
     path_node->position.y = pos_y;
     path_node->next = NULL;
@@ -52,6 +71,22 @@ DRAGON *init_dragon(int t, int index, int pos_y, int pos_x){
     return init_dragon;
 }
 
+
+void init_princess_rescue_permutations(MAZE *maze, int permutations){
+    maze->princess_rescue = (PRINCESS_RESCUE *)malloc(permutations * sizeof(PRINCESS_RESCUE));
+}
+
+
+MAZE *init_princess_rescue(MAZE *maze, int arr[], int size, int index){
+    maze->princess_rescue[index].princess_indexes = (int *)malloc(size * sizeof(int));
+
+    for (int i = 0; i < size; i++)
+        maze->princess_rescue[index].princess_indexes[i] = arr[i];
+    
+    maze->princess_rescue[index].t = -1;
+
+    return maze;
+}
 
 /* prida novy node do pola ako path root */
 MAZE *actualize_path(MAZE *maze, PATH_NODE *check_node, int index){
@@ -103,10 +138,10 @@ MAZE *add_neighboor_to_path(MAZE *maze, PATH_NODE *new_node, int neighboor_value
     PATH_NODE *neighboor_node;
 
     if(neighboor_value == PRINCESS_HELPER)
-        neighboor_node = init_path_node(y * 10 + x, neighboor_value-SLOW_PATH_VALUE, y, x, TRUE);
+        neighboor_node = init_path_node(y * 10 + x, neighboor_value-SLOW_PATH_VALUE, y, x);
 
     else
-        neighboor_node = init_path_node(y * 10 + x, neighboor_value, y, x, FALSE);
+        neighboor_node = init_path_node(y * 10 + x, neighboor_value, y, x);
     
     maze = create_edge(maze, new_node, neighboor_node, index);
     return maze;
@@ -147,35 +182,33 @@ MAZE *create_vertex(MAZE *maze, PATH_NODE *new_node, char **map, int index){
 MAZE *load_maze(MAZE *maze, char **mapa, int t){
     PATH_NODE *new_node;
     DRAGON *drak;
-    int y, x, num_of_nodes = 0, num_of_princess = 0;
+    int y, x;
 
     for (y = 0; y < maze->height; y++){
         for (x = 0; x < maze->width; x++){
             if (mapa[y][x] == FOREST_PATH || mapa[y][x] == SLOW_WAY || mapa[y][x] == PRINC || mapa[y][x] == DRAG){
 
                 if(mapa[y][x] == FOREST_PATH)
-                    new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x, FALSE);
+                    new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x);
                 
                 else if(mapa[y][x] == PRINC){
-                    new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x, TRUE);
-                    num_of_princess++;
+                    new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x);
+                    maze->princess_index_arr[maze->princess_num++] = maze->nodes_num;
                 }
                 else if(mapa[y][x] == DRAG){
-                    drak = init_dragon(t, num_of_nodes, y, x);
+                    drak = init_dragon(t, maze->nodes_num, y, x);
                     maze->dragon = drak;
-                    new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x, FALSE);
+                    new_node = init_path_node(y * 10 + x, FOREST_PATH_VALUE, y, x);
                 }
                 else
-                    new_node = init_path_node(y * 10 + x, SLOW_PATH_VALUE, y, x, FALSE);
+                    new_node = init_path_node(y * 10 + x, SLOW_PATH_VALUE, y, x);
 
-                maze = create_vertex(maze, new_node, mapa, num_of_nodes);
+                maze = create_vertex(maze, new_node, mapa, maze->nodes_num);
 
-                num_of_nodes++;
+                maze->nodes_num++;
             }
         }
     }
-    maze->nodes_num = num_of_nodes;
-    maze->princess_num = num_of_princess;
 
     return maze;
 }
@@ -205,16 +238,102 @@ int **kil_the_dragon(MAZE *maze, int *dlzka_cesty){
     return dragon_path;
 }
 
+
+int **add_princess_rescue_path(MAZE *maze, int **path){
+
+    return path;
+}
+
+
+void get_number_of_princess_permutations(int *princess_num){
+    int loop_max = *princess_num;
+    for (int i = 2; i < loop_max; i++)
+        *princess_num *= i;
+}
+
+//Prints the array 
+void princess_rescue_perm(MAZE *maze, int factorial) {
+    printf("----- Permutacie postupu hladania princezien -----\n");
+    for (int i = 0; i < factorial; i++){
+        printf("perm %d %d: ", i, maze->princess_num);
+        for (int j = 0; j < maze->princess_num; j++)
+            printf("%d ", maze->princess_rescue[i].princess_indexes[j]);
+        printf("\n");
+    }
+    printf("\n");
+}
+
+
+void swappiness(int *a, int *b){
+    int temp = *b;
+    *b = *a;
+    *a = temp;
+}
+
+// Generating permutation using Heap Algorithm - zdroj: https://www.geeksforgeeks.org/heaps-algorithm-for-generating-permutations/
+void heapPermutation(MAZE *maze, int a[], int size, int index) {
+    int static je = 0;
+    // if size becomes 1 then prints the obtained
+    // permutation
+    if (size == 1) {
+        maze = init_princess_rescue(maze, a, maze->princess_num, je++);
+        return; 
+    } 
+  
+    for (int i=0; i<size; i++) { 
+        heapPermutation(maze, a, size-1, index); 
+  
+        // if size is odd, swap first and last 
+        // element 
+        if (size%2==1) 
+            swappiness(&a[0], &a[size-1]); 
+  
+        // If size is even, swap ith and last 
+        // element 
+        else
+            swappiness(&a[i], &a[size-1]); 
+    } 
+} 
+
+
 int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
-    int i;
+    int i, starting_index, act_found_princess, factorial;
     int **path;
     PATH_NODE *current = NULL;
+    
+    starting_index = act_found_princess = 0;
 
+    /* TODO - urobit osetrenia pre neplatne vstupy - ziadna/zabednena - binarna halda skonci pred navstivenim vsetkych princezna/drak ... */
     MAZE *maze = init_maze(m, n);
     maze = load_maze(maze, mapa, t);
 
-    maze = dijkstra(maze);
+    maze = dijkstra(maze, starting_index);
     path = kil_the_dragon(maze, dlzka_cesty);
+
+    /**
+     * kontrola cas t najdenej cesty, ak je mensi rovny ako t pokracuj v zachrane princezien
+    */
+    if(*dlzka_cesty > t)
+        return NULL;
+
+    /**
+     * starting index je index draka, zisti permutacie a vykonaj a porovnaj ich
+    */    
+    starting_index = maze->dragon->index;
+    factorial = maze->princess_num;
+
+    get_number_of_princess_permutations(&factorial);
+    init_princess_rescue_permutations(maze, factorial);
+
+    heapPermutation(maze, maze->princess_index_arr, maze->princess_num, 0);
+    princess_rescue_perm(maze, factorial);
+
+    // while(act_found_princess++ != maze->princess_num){
+    //     re_init_maze(maze);
+    //     maze = dijkstra(maze, starting_index);
+    //     starting_index = find_nearest_princess(maze);
+    //     path = add_princess_rescue_path(maze, path);
+    // }
 
     printf("----- Konecny vypis grafu!! -----\n");
     printf("Number of nodes in path: %d \n", maze->nodes_num);
