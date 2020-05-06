@@ -1,6 +1,7 @@
 #include "graph.h"
 #include "dijkstra.c"
 
+
 PATH *init_path(int maze_width, int maze_height){
     PATH *path = (PATH *)malloc((maze_width * maze_height) * sizeof(PATH));
 
@@ -14,6 +15,7 @@ PATH *init_path(int maze_width, int maze_height){
     return path;
 }
 
+
 MAZE *init_maze(int maze_width, int maze_height){
     MAZE *maze = (MAZE *)malloc(sizeof(MAZE));
     maze->width = maze_width;
@@ -24,6 +26,7 @@ MAZE *init_maze(int maze_width, int maze_height){
 
     return maze;
 }
+
 
 PATH_NODE *init_path_node(int id, int path_node_cost, int pos_y, int pos_x, int is_princess){
     PATH_NODE *path_node = (PATH_NODE *)malloc(sizeof(PATH_NODE));
@@ -37,6 +40,7 @@ PATH_NODE *init_path_node(int id, int path_node_cost, int pos_y, int pos_x, int 
     return path_node;
 }
 
+
 DRAGON *init_dragon(int t, int index, int pos_y, int pos_x){
     DRAGON *init_dragon = (DRAGON *)malloc(sizeof(DRAGON));
 
@@ -48,6 +52,7 @@ DRAGON *init_dragon(int t, int index, int pos_y, int pos_x){
     return init_dragon;
 }
 
+
 /* prida novy node do pola ako path root */
 MAZE *actualize_path(MAZE *maze, PATH_NODE *check_node, int index){
     maze->path[index].path_root = check_node;
@@ -55,6 +60,7 @@ MAZE *actualize_path(MAZE *maze, PATH_NODE *check_node, int index){
 
     return maze;
 }
+
 
 int check_node_neighbors(MAZE *maze, char **map, int x, int y){
     if(x < 0 || x >= maze->width || y < 0 || y >= maze->height)
@@ -73,6 +79,7 @@ int check_node_neighbors(MAZE *maze, char **map, int x, int y){
     return FALSE;
 }
 
+
 MAZE *create_edge(MAZE *maze, PATH_NODE *src, PATH_NODE *dst, int index){
     int i = 0;
     PATH_NODE *current = maze->path[index].path_root;
@@ -86,6 +93,7 @@ MAZE *create_edge(MAZE *maze, PATH_NODE *src, PATH_NODE *dst, int index){
     return maze;
 
 }
+
 
 MAZE *add_neighboor_to_path(MAZE *maze, PATH_NODE *new_node, int neighboor_value, int index, int y, int x){
     if(neighboor_value <= FALSE){
@@ -103,6 +111,7 @@ MAZE *add_neighboor_to_path(MAZE *maze, PATH_NODE *new_node, int neighboor_value
     maze = create_edge(maze, new_node, neighboor_node, index);
     return maze;
 }
+
 
 MAZE *create_vertex(MAZE *maze, PATH_NODE *new_node, char **map, int index){
     PATH_NODE *neighboor_node;
@@ -133,6 +142,7 @@ MAZE *create_vertex(MAZE *maze, PATH_NODE *new_node, char **map, int index){
 
     return maze;
 }
+
 
 MAZE *load_maze(MAZE *maze, char **mapa, int t){
     PATH_NODE *new_node;
@@ -170,19 +180,46 @@ MAZE *load_maze(MAZE *maze, char **mapa, int t){
     return maze;
 }
 
-int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
-    int i = 0;
+
+int **kil_the_dragon(MAZE *maze, int *dlzka_cesty){
+    int path_node_index = maze->dragon->index, counter = 0;
+    int **dragon_path = (int **)malloc((maze->width * maze->height) * sizeof(int *));
+
+    PATH_NODE *root_path_node = maze->path[maze->dragon->index].path_root;
+    *dlzka_cesty = maze->path[maze->dragon->index].cost;
+
+    while(root_path_node->id != maze->path[0].path_root->id){
+        dragon_path[counter] = (int *)malloc(2 * sizeof(int));
+        dragon_path[counter][0] = root_path_node->position.x;
+        dragon_path[counter][1] = root_path_node->position.y;
+
+        path_node_index = maze->path[path_node_index].src_path_root;
+        root_path_node = maze->path[path_node_index].path_root;
+        counter++;
+    }
+
+    dragon_path[counter] = (int *)malloc(2 * sizeof(int));
+    dragon_path[counter][0] = maze->path[0].path_root->position.x;
+    dragon_path[counter][1] = maze->path[0].path_root->position.y;
+
+    return dragon_path;
+}
+
+int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
+    int i;
+    int **path;
     PATH_NODE *current = NULL;
 
     MAZE *maze = init_maze(m, n);
     maze = load_maze(maze, mapa, t);
 
     maze = dijkstra(maze);
-    
+    path = kil_the_dragon(maze, dlzka_cesty);
+
     printf("----- Konecny vypis grafu!! -----\n");
     printf("Number of nodes in path: %d \n", maze->nodes_num);
     printf("Number of princess: %d \n", maze->princess_num);
-    printf("Drak coordinates: [%d, %d] \n\n", maze->dragon->position.y, maze->dragon->position.x);
+    printf("Drak coordinates: [%d, %d] and his index in path: %d\n\n", maze->dragon->position.y, maze->dragon->position.x, maze->dragon->index);
 
     for (i = 0; i < maze->nodes_num; i++){
         printf("i:%d id: %d path cost: %d known: %d src path node: %d", i, maze->path[i].path_root->id, maze->path[i].cost, maze->path[i].known, maze->path[i].src_path_root);
@@ -194,5 +231,5 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
         printf(" [%d, %d]\n", current->position.y, current->position.x);
     }
 
-    return (int *)2;
+    return path;
 }

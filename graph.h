@@ -78,4 +78,4 @@ MAZE *load_maze(MAZE *maze, char **mapa, int t);
 
 #endif /* GRAPH_H */
 
-int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty);
+int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty);
