@@ -49,9 +49,7 @@ HEAP *clean_in_heap(HEAP *heap, int index_heap_node_need_clean){
     HEAP_NODE *parent;
 
     while(index_heap_node_need_clean > 0 && (parent = find_parent(heap, index_heap_node_need_clean))->value > heap->heap_node[index_heap_node_need_clean].value){
-        // printf("funguje: 1. value: %d 1. index: %d, 2. value: %d 2. index: %d\n", heap->heap_node[index_heap_node_need_clean].value, index_heap_node_need_clean, heap->heap_node[((index_heap_node_need_clean - 1) / 2)].value, ((index_heap_node_need_clean - 1) / 2));
         swap_heap_nodes(&heap->heap_node[index_heap_node_need_clean], &heap->heap_node[((index_heap_node_need_clean - 1) / 2)]);
-        // printf("funguje: 1. value: %d 1. index: %d, 2. value: %d 2. index: %d\n", heap->heap_node[index_heap_node_need_clean].value, index_heap_node_need_clean, heap->heap_node[((index_heap_node_need_clean - 1) / 2)].value, ((index_heap_node_need_clean - 1) / 2));
         index_heap_node_need_clean = (index_heap_node_need_clean - 1) / 2;
     }
 

@@ -83,7 +83,7 @@ MAZE *init_princess_rescue(MAZE *maze, int arr[], int size, int index){
     for (int i = 0; i < size; i++)
         maze->princess_rescue[index].princess_indexes[i] = arr[i];
     
-    maze->princess_rescue[index].t = -1;
+    maze->princess_rescue[index].t = 0;
 
     return maze;
 }
@@ -252,10 +252,10 @@ void get_number_of_princess_permutations(int *princess_num){
 }
 
 //Prints the array 
-void princess_rescue_perm(MAZE *maze, int factorial) {
+void print_princess_rescue_permutation(MAZE *maze, int factorial) {
     printf("----- Permutacie postupu hladania princezien -----\n");
     for (int i = 0; i < factorial; i++){
-        printf("perm %d %d: ", i, maze->princess_num);
+        printf("perm %d cost %d: ", i, maze->princess_rescue[i].t);
         for (int j = 0; j < maze->princess_num; j++)
             printf("%d ", maze->princess_rescue[i].princess_indexes[j]);
         printf("\n");
@@ -326,14 +326,26 @@ int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     init_princess_rescue_permutations(maze, factorial);
 
     heapPermutation(maze, maze->princess_index_arr, maze->princess_num, 0);
-    princess_rescue_perm(maze, factorial);
 
-    // while(act_found_princess++ != maze->princess_num){
-    //     re_init_maze(maze);
-    //     maze = dijkstra(maze, starting_index);
-    //     starting_index = find_nearest_princess(maze);
-    //     path = add_princess_rescue_path(maze, path);
-    // }
+    for (int m = 0; m < factorial; m++){
+        // starting_index = maze->princess_rescue[m].princess_indexes[0];
+        // printf("starting index: %d\n", starting_index);
+        for (int n = 0; n < maze->princess_num; n++){
+            re_init_maze(maze);
+            maze = dijkstra(maze, starting_index);
+
+            /* nastavim novy start index na dalsiu dijkstru */
+            printf("cost from %d ", starting_index);
+            starting_index = maze->princess_rescue[m].princess_indexes[n];
+            printf("to %d is: %d\n", starting_index, maze->path[starting_index].cost);
+            maze->princess_rescue[m].t += maze->path[starting_index].cost;
+            // printf("starting index: %d\n", starting_index);
+        }
+        printf("\n");
+        starting_index = maze->dragon->index;
+    }
+
+    print_princess_rescue_permutation(maze, factorial);
 
     printf("----- Konecny vypis grafu!! -----\n");
     printf("Number of nodes in path: %d \n", maze->nodes_num);
