@@ -260,8 +260,7 @@ void actualize_princess_rescue_path(MAZE *maze, int starting_index, int ending_i
     int i = maze->princess_rescue[princess_rescue_index].num_princess_rescue_path;
 
     while (root_path_node->id != maze->path[starting_index].path_root->id){
-        index_rescue_perm = indexer + i - 1;
-        // printf("ukladam na index: %d\n", index_rescue_perm);
+        index_rescue_perm = indexer + i - 2;
 
         maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm] = (int *)malloc(2 * sizeof(int));
         maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm][0] = root_path_node->position.y;
@@ -273,13 +272,13 @@ void actualize_princess_rescue_path(MAZE *maze, int starting_index, int ending_i
         i--;
     }
 
-    index_rescue_perm = indexer + i - 1;
-    // printf("ukladam na index: %d\n", index_rescue_perm);
+    // index_rescue_perm = indexer + i - 1;
+    // // printf("ukladam na index: %d\n", index_rescue_perm);
 
-    maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm] = (int *)malloc(2 * sizeof(int));
-    maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm][0] = root_path_node->position.y;
-    maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm][1] = root_path_node->position.x;
-    maze->princess_rescue[princess_rescue_index].num_princess_rescue_path++;
+    // maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm] = (int *)malloc(2 * sizeof(int));
+    // maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm][0] = root_path_node->position.y;
+    // maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm][1] = root_path_node->position.x;
+    // maze->princess_rescue[princess_rescue_index].num_princess_rescue_path++;
 }
 
 
@@ -362,10 +361,10 @@ void print_graph(MAZE *maze){
 
 
 int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
-    int starting_index, act_found_princess, factorial;
+    int starting_index, factorial;
     int **path;
     
-    starting_index = act_found_princess = 0;
+    starting_index = 0;
 
     MAZE *maze = init_maze(m, n);
     maze = load_maze(maze, mapa, t);
@@ -416,7 +415,10 @@ int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
         starting_index = maze->dragon->index;
     }
 
+    /* printing permutation and their cost and path */
     print_princess_rescue_permutation(maze, factorial);
+
+    /* fn for printing graph as adjacency list */
     print_graph(maze);
 
     return path;

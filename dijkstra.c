@@ -2,14 +2,16 @@
 #include "binary_heap.c"
 
 void init_starting_vertex(MAZE *maze, int index){
-    maze->path[index].cost = FOREST_PATH_VALUE;
+    maze->path[index].cost = 0;
     maze->path[index].known = TRUE;
     maze->path[index].source_path->index_of_src_path_root = index;
 }
 
+
 void set_known_root_node(MAZE *maze, int index){
     maze->path[index].known = TRUE;
 }
+
 
 /* najdem node z LL ako root node a updatujem mu paht cost */
 void change_path_cost(MAZE *maze, PATH_NODE *path_node, HEAP *heap, int root_path_cost, int root_path_index){
@@ -32,6 +34,7 @@ void change_path_cost(MAZE *maze, PATH_NODE *path_node, HEAP *heap, int root_pat
     printf("change_path_cost - Asi je niekde chyba, nenasiel som match!\n");
 }
 
+
 /* Prejde linked list od pathroota horizontalne */
 void find_and_update_neighboor(MAZE *maze, PATH_NODE *current_path_node, HEAP *heap, int root_path_cost, int root_path_index){
 
@@ -49,8 +52,13 @@ void check_and_update_src_paths(MAZE *maze, int starting_index){
         if (maze->path[i].known == FALSE){
             printf("nasiel som neobjaveny node, skontroluj to nieje princezna!\n");
         } else{
-            /* pridam do pola src_path source nodes */
+            /* pripocitam najdeny node ako source */
             maze->path[i].source_path->num_of_src_path_nodes++;
+            
+            /**
+             * ak dany pathroot nie je zaciatok cesty tak mas dany path root node source node
+             * tak pokracuj az kym nepridem na node zaciatku cesty
+            */
 
             if (maze->path[i].path_root->id != maze->path[starting_index].path_root->id){
                 index_counter = maze->path[i].source_path->index_of_src_path_root;
@@ -59,12 +67,13 @@ void check_and_update_src_paths(MAZE *maze, int starting_index){
                     maze->path[i].source_path->num_of_src_path_nodes++;
                     index_counter = maze->path[index_counter].source_path->index_of_src_path_root;
                 }
-                
+
                 maze->path[i].source_path->num_of_src_path_nodes++;
             }            
         }
     }
 }
+
 
 MAZE *dijkstra(MAZE *maze, int starting_index){
     PATH_NODE *current;
