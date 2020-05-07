@@ -393,6 +393,16 @@ int cheapest_princess_rescue_path(MAZE *maze, int fatorial, int *dlzka_cesty){
 }
 
 
+void free_dragon_path(MAZE *maze, int **dragon_path){
+
+    for (int i = 0; i < (maze->width * maze->height); i++){
+        for (int j = 0; j < 2; j++)
+            free(&dragon_path[i][j]);
+        
+    }
+}
+
+
 int *create_and_connect_final_path(MAZE *maze, int **path, int index_of_cheapest_path){
     int *final_array = (int *)malloc((2*maze->total_path_lengt) + 1 * sizeof(int));
     
@@ -429,7 +439,7 @@ void free_maze(MAZE *maze, int factorial){
 
     for (int i = 0; i < (maze->width * maze->height); i++){
         current = maze->path[i].path_root != NULL ? maze->path[i].path_root->next : maze->path[i].path_root;
-        
+
         while(current != NULL){
             previous = current;
             current = current->next;
@@ -472,9 +482,11 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     starting_index = maze->dragon->index;
     factorial = maze->princess_num;
 
+    /* Vypocet moznych roznych permutacii navstivenia princezien (faktorial z poctu princezien) */
     get_number_of_princess_permutations(&factorial);
     init_princess_rescue_permutations(maze, factorial);
 
+    /* Vytvorenie roznych permutacii navstivenia princezien podla algoritmu Heap Algorithm (ciastocne prebrany - zdroj pri fn)*/
     heapPermutation(maze, maze->princess_index_arr, maze->princess_num, 0);
 
     /* prechadzam polia moznych permutacii hladania princezien */ 
@@ -503,18 +515,19 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
         starting_index = maze->dragon->index;
     }
 
-    index_of_cheapest_path =  cheapest_princess_rescue_path(maze, factorial, dlzka_cesty);
+    /* Najde najlacnejsiu cestu spomedzi permutacii */
+    index_of_cheapest_path = cheapest_princess_rescue_path(maze, factorial, dlzka_cesty);
+
+    /* K zatial docastnej casovej narocnosti cesty k drakovi pripocitava casovu narocnost hladania princezien */
     maze->total_path_lengt += (maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path - 1);
+
+    /* Spoji pole pre cestu k drakovi a hladania princezien */
     final_array = create_and_connect_final_path(maze, path, index_of_cheapest_path);
 
-    /* for printing final path */
-    // print_final_path(maze, final_array);
-
-    /* printing permutation and their cost and path */
-    // print_princess_rescue_permutation(maze, factorial);
-
-    /* fn for printing graph as adjacency list */
+    /* functions for printing purposes and checks */
     // print_graph(maze);
+    // print_final_path(maze, final_array);
+    // print_princess_rescue_permutation(maze, factorial);
 
     free_maze(maze, factorial);
     return final_array;
