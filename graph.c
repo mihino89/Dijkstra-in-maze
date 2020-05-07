@@ -282,23 +282,7 @@ void actualize_princess_rescue_path(MAZE *maze, int starting_index, int ending_i
 }
 
 
-//Prints the array 
-void print_princess_rescue_permutation(MAZE *maze, int factorial) {
-    printf("\n----- Permutacie postupu hladania princezien -----\n");
-    for (int i = 0; i < factorial; i++){
-        printf("perm %d cost %d: ", i, maze->princess_rescue[i].t);
-        for (int j = 0; j < maze->princess_num; j++)
-            printf("%d ", maze->princess_rescue[i].permutation_of_princess_indexes[j]);
-        printf("perm path: %d", maze->princess_rescue[i].num_princess_rescue_path);
-        for (int j = 0; j < maze->princess_rescue[i].num_princess_rescue_path - 1; j++){
-            printf("[%d, %d] ", maze->princess_rescue[i].rescue_path_of_princess_permutation[j][0], maze->princess_rescue[i].rescue_path_of_princess_permutation[j][1]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-
+/* function  return all posible permutations of princess number in maze (count factorial) */
 void get_number_of_princess_permutations(int *princess_num){
     int loop_max = *princess_num;
     for (int i = 2; i < loop_max; i++)
@@ -360,6 +344,40 @@ void print_graph(MAZE *maze){
 }
 
 
+/* function printing all posible permutations of finding princess, moreover their cost and path */
+void print_princess_rescue_permutation(MAZE *maze, int factorial) {
+    printf("\n----- Permutacie postupu hladania princezien -----\n");
+    for (int i = 0; i < factorial; i++){
+        printf("perm %d cost %d: ", i, maze->princess_rescue[i].t);
+        for (int j = 0; j < maze->princess_num; j++)
+            printf("%d ", maze->princess_rescue[i].permutation_of_princess_indexes[j]);
+        printf("perm path: %d", maze->princess_rescue[i].num_princess_rescue_path);
+        for (int j = 0; j < maze->princess_rescue[i].num_princess_rescue_path - 1; j++){
+            printf("[%d, %d] ", maze->princess_rescue[i].rescue_path_of_princess_permutation[j][0], maze->princess_rescue[i].rescue_path_of_princess_permutation[j][1]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+
+/* funkcia vrati index najlacnejsej cesty spomedzi permutacii */
+int cheapest_princess_rescue_path(MAZE *maze, int fatorial){
+    int min, min_index, i;
+
+    min = maze->princess_rescue[0].t;
+    min_index = 0;
+
+    for (int i = 1; i < fatorial; i++){
+        if(maze->princess_rescue[i].t < min){
+            min = maze->princess_rescue[i].t;
+            min_index = i;
+        }
+    }
+
+    return min_index;
+}
+
 int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     int starting_index, factorial;
     int **path;
@@ -374,6 +392,7 @@ int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
 
     /**
      * kontrola cas t najdenej cesty, ak je mensi rovny ako t pokracuj v zachrane princezien
+     * a teda znamena to, ze som stihol zachranit princeznu v cas limite
     */
     if(*dlzka_cesty > t)
         return NULL;
@@ -414,6 +433,8 @@ int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
         /* start index znovu nastavim na index draka v grafe */
         starting_index = maze->dragon->index;
     }
+
+    printf("najlacnejsia cesta ma hodnotu: %d\n", cheapest_princess_rescue_path(maze, factorial));
 
     /* printing permutation and their cost and path */
     print_princess_rescue_permutation(maze, factorial);
