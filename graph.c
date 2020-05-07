@@ -2,6 +2,15 @@
 #include "dijkstra.c"
 
 
+SOURCE_PATH *init_source_path(int size){
+    SOURCE_PATH *source_path = (SOURCE_PATH *)malloc(sizeof(SOURCE_PATH));
+
+    source_path->index_of_src_path_root = -1;
+    source_path->num_of_src_path_nodes = 0;
+
+    return source_path;
+}
+
 PATH *init_path(int maze_width, int maze_height){
     PATH *path = (PATH *)malloc((maze_width * maze_height) * sizeof(PATH));
 
@@ -9,7 +18,7 @@ PATH *init_path(int maze_width, int maze_height){
         path[i].path_root = NULL;
         path[i].cost = INFINITY;
         path[i].known = FALSE;
-        path[i].src_path_root = -1;
+        path[i].source_path = init_source_path(maze_width * maze_height);
     }
 
     return path;
@@ -44,7 +53,8 @@ void re_init_maze(MAZE *maze){
     for (int i = 0; i < maze->nodes_num; i++){
         maze->path[i].known = FALSE;
         maze->path[i].cost = INFINITY;
-        maze->path[i].src_path_root = -1;
+        maze->path[i].source_path->index_of_src_path_root = -1;
+        maze->path[i].source_path->num_of_src_path_nodes = 0;
     }
 }
 
@@ -78,10 +88,12 @@ void init_princess_rescue_permutations(MAZE *maze, int permutations){
 
 
 MAZE *init_princess_rescue(MAZE *maze, int arr[], int size, int index){
-    maze->princess_rescue[index].princess_indexes = (int *)malloc(size * sizeof(int));
+    maze->princess_rescue[index].permutation_of_princess_indexes = (int *)malloc(size * sizeof(int));
+    maze->princess_rescue[index].rescue_path_of_princess_permutation = (int **)malloc((maze->width * maze->height * 4) * sizeof(int*));
+    maze->princess_rescue[index].num_princess_rescue_path = 0;
 
     for (int i = 0; i < size; i++)
-        maze->princess_rescue[index].princess_indexes[i] = arr[i];
+        maze->princess_rescue[index].permutation_of_princess_indexes[i] = arr[i];
     
     maze->princess_rescue[index].t = 0;
 
@@ -218,30 +230,73 @@ int **kil_the_dragon(MAZE *maze, int *dlzka_cesty){
     int path_node_index = maze->dragon->index, counter = 0;
     int **dragon_path = (int **)malloc((maze->width * maze->height) * sizeof(int *));
 
-    PATH_NODE *root_path_node = maze->path[maze->dragon->index].path_root;
-    *dlzka_cesty = maze->path[maze->dragon->index].cost;
+    PATH_NODE *root_path_node = maze->path[path_node_index].path_root;
+    *dlzka_cesty = maze->path[path_node_index].cost;
 
     while(root_path_node->id != maze->path[0].path_root->id){
         dragon_path[counter] = (int *)malloc(2 * sizeof(int));
-        dragon_path[counter][0] = root_path_node->position.x;
-        dragon_path[counter][1] = root_path_node->position.y;
+        dragon_path[counter][0] = root_path_node->position.y;
+        dragon_path[counter][1] = root_path_node->position.x;
 
-        path_node_index = maze->path[path_node_index].src_path_root;
+        path_node_index = maze->path[path_node_index].source_path->index_of_src_path_root;
         root_path_node = maze->path[path_node_index].path_root;
         counter++;
     }
 
     dragon_path[counter] = (int *)malloc(2 * sizeof(int));
-    dragon_path[counter][0] = maze->path[0].path_root->position.x;
-    dragon_path[counter][1] = maze->path[0].path_root->position.y;
+    dragon_path[counter][0] = maze->path[0].path_root->position.y;
+    dragon_path[counter][1] = maze->path[0].path_root->position.x;
 
     return dragon_path;
 }
 
 
-int **add_princess_rescue_path(MAZE *maze, int **path){
+void actualize_princess_rescue_path(MAZE *maze, int starting_index, int ending_index, int princess_rescue_index){
+    int indexer = maze->path[ending_index].source_path->num_of_src_path_nodes;
+    int index_rescue_perm;
+    // printf("pocet policok k princeznej doteraz: %d potrebne pre tento usek dalsich: %d\n", maze->princess_rescue[princess_rescue_index].num_princess_rescue_path, maze->path[ending_index].source_path->num_of_src_path_nodes);
+    PATH_NODE *root_path_node = maze->path[ending_index].path_root;
 
-    return path;
+    int i = maze->princess_rescue[princess_rescue_index].num_princess_rescue_path;
+
+    while (root_path_node->id != maze->path[starting_index].path_root->id){
+        index_rescue_perm = indexer + i - 1;
+        // printf("ukladam na index: %d\n", index_rescue_perm);
+
+        maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm] = (int *)malloc(2 * sizeof(int));
+        maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm][0] = root_path_node->position.y;
+        maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm][1] = root_path_node->position.x;
+
+        ending_index = maze->path[ending_index].source_path->index_of_src_path_root;
+        root_path_node = maze->path[ending_index].path_root;
+        maze->princess_rescue[princess_rescue_index].num_princess_rescue_path++;
+        i--;
+    }
+
+    index_rescue_perm = indexer + i - 1;
+    // printf("ukladam na index: %d\n", index_rescue_perm);
+
+    maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm] = (int *)malloc(2 * sizeof(int));
+    maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm][0] = root_path_node->position.y;
+    maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm][1] = root_path_node->position.x;
+    maze->princess_rescue[princess_rescue_index].num_princess_rescue_path++;
+}
+
+
+//Prints the array 
+void print_princess_rescue_permutation(MAZE *maze, int factorial) {
+    printf("\n----- Permutacie postupu hladania princezien -----\n");
+    for (int i = 0; i < factorial; i++){
+        printf("perm %d cost %d: ", i, maze->princess_rescue[i].t);
+        for (int j = 0; j < maze->princess_num; j++)
+            printf("%d ", maze->princess_rescue[i].permutation_of_princess_indexes[j]);
+        printf("perm path: %d", maze->princess_rescue[i].num_princess_rescue_path);
+        for (int j = 0; j < maze->princess_rescue[i].num_princess_rescue_path - 1; j++){
+            printf("[%d, %d] ", maze->princess_rescue[i].rescue_path_of_princess_permutation[j][0], maze->princess_rescue[i].rescue_path_of_princess_permutation[j][1]);
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
 
 
@@ -249,18 +304,6 @@ void get_number_of_princess_permutations(int *princess_num){
     int loop_max = *princess_num;
     for (int i = 2; i < loop_max; i++)
         *princess_num *= i;
-}
-
-//Prints the array 
-void print_princess_rescue_permutation(MAZE *maze, int factorial) {
-    printf("----- Permutacie postupu hladania princezien -----\n");
-    for (int i = 0; i < factorial; i++){
-        printf("perm %d cost %d: ", i, maze->princess_rescue[i].t);
-        for (int j = 0; j < maze->princess_num; j++)
-            printf("%d ", maze->princess_rescue[i].princess_indexes[j]);
-        printf("\n");
-    }
-    printf("\n");
 }
 
 
@@ -303,7 +346,6 @@ int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     
     starting_index = act_found_princess = 0;
 
-    /* TODO - urobit osetrenia pre neplatne vstupy - ziadna/zabednena - binarna halda skonci pred navstivenim vsetkych princezna/drak ... */
     MAZE *maze = init_maze(m, n);
     maze = load_maze(maze, mapa, t);
 
@@ -327,21 +369,29 @@ int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
 
     heapPermutation(maze, maze->princess_index_arr, maze->princess_num, 0);
 
+    /* prechadzam polia moznych permutacii hladania princezien */ 
     for (int m = 0; m < factorial; m++){
-        // starting_index = maze->princess_rescue[m].princess_indexes[0];
-        // printf("starting index: %d\n", starting_index);
+        
+        /* prechadzam jednotlivo danu permutaciu */
         for (int n = 0; n < maze->princess_num; n++){
+
+            /* Precistujem bludisko a pripravujem na novu dijsktru */
             re_init_maze(maze);
+
+            /* Prva cesta je vzdy od draka k prvej permutacii princeznej */
             maze = dijkstra(maze, starting_index);
 
+            /* aktualizujem cestu permutacie */
+            actualize_princess_rescue_path(maze, starting_index, maze->princess_rescue[m].permutation_of_princess_indexes[n], m);
+
             /* nastavim novy start index na dalsiu dijkstru */
-            printf("cost from %d ", starting_index);
-            starting_index = maze->princess_rescue[m].princess_indexes[n];
-            printf("to %d is: %d\n", starting_index, maze->path[starting_index].cost);
+            starting_index = maze->princess_rescue[m].permutation_of_princess_indexes[n];
+            
+            /* zapocitam cas potrebny na najdenie hladanej princeznej */
             maze->princess_rescue[m].t += maze->path[starting_index].cost;
-            // printf("starting index: %d\n", starting_index);
         }
-        printf("\n");
+
+        /* start index znovu nastavim na index draka v grafe */
         starting_index = maze->dragon->index;
     }
 
@@ -353,7 +403,8 @@ int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     printf("Drak coordinates: [%d, %d] and his index in path: %d\n\n", maze->dragon->position.y, maze->dragon->position.x, maze->dragon->index);
 
     for (i = 0; i < maze->nodes_num; i++){
-        printf("i:%d id: %d path cost: %d known: %d src path node: %d", i, maze->path[i].path_root->id, maze->path[i].cost, maze->path[i].known, maze->path[i].src_path_root);
+        printf("i:%d id: %d path cost: %d known: %d src path node: %d source nodes %d,  ", i, maze->path[i].path_root->id, maze->path[i].cost, maze->path[i].known, maze->path[i].source_path->index_of_src_path_root, maze->path[i].source_path->num_of_src_path_nodes);
+        
         current = maze->path[i].path_root;
         while(current->next != NULL ){
             printf(" [%d, %d] ->", current->position.y, current->position.x);

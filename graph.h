@@ -42,18 +42,27 @@ typedef struct dragones_{
 } DRAGON;
 
 
+typedef struct source_path{
+    int index_of_src_path_root;
+    int num_of_src_path_nodes;
+} SOURCE_PATH;
+
+
 /* Path in adjacency list */
 typedef struct path{
     int cost;
-    int src_path_root;
     int known;
+    SOURCE_PATH *source_path;
+    // int *src_path_nodes;
     PATH_NODE *path_root;
 } PATH;
 
 
 typedef struct princess_rescue{
     int t;
-    int *princess_indexes;
+    int *permutation_of_princess_indexes;
+    int **rescue_path_of_princess_permutation;
+    int num_princess_rescue_path;
 } PRINCESS_RESCUE;
 
 
@@ -67,6 +76,7 @@ typedef struct maze{
     PRINCESS_RESCUE *princess_rescue;
     PATH *path;
 } MAZE;
+
 
 PATH *init_path(int maze_width, int maze_height);
 MAZE *init_maze(int maze_width, int maze_height);
