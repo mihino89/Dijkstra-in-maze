@@ -339,10 +339,31 @@ void heapPermutation(MAZE *maze, int a[], int size, int index) {
 } 
 
 
-int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
-    int i, starting_index, act_found_princess, factorial;
-    int **path;
+void print_graph(MAZE *maze){
+    int i;
     PATH_NODE *current = NULL;
+
+    printf("----- Vypis grafu!! -----\n");
+    printf("Number of nodes in path: %d \n", maze->nodes_num);
+    printf("Number of princess: %d \n", maze->princess_num);
+    printf("Drak coordinates: [%d, %d] and his index in path: %d\n\n", maze->dragon->position.y, maze->dragon->position.x, maze->dragon->index);
+
+    for (i = 0; i < maze->nodes_num; i++){
+        printf("i:%d id: %d path cost: %d known: %d src path node: %d source nodes %d,  ", i, maze->path[i].path_root->id, maze->path[i].cost, maze->path[i].known, maze->path[i].source_path->index_of_src_path_root, maze->path[i].source_path->num_of_src_path_nodes);
+        
+        current = maze->path[i].path_root;
+        while(current->next != NULL ){
+            printf(" [%d, %d] ->", current->position.y, current->position.x);
+            current = current->next;
+        }
+        printf(" [%d, %d]\n", current->position.y, current->position.x);
+    }
+}
+
+
+int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
+    int starting_index, act_found_princess, factorial;
+    int **path;
     
     starting_index = act_found_princess = 0;
 
@@ -396,22 +417,7 @@ int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     }
 
     print_princess_rescue_permutation(maze, factorial);
-
-    printf("----- Konecny vypis grafu!! -----\n");
-    printf("Number of nodes in path: %d \n", maze->nodes_num);
-    printf("Number of princess: %d \n", maze->princess_num);
-    printf("Drak coordinates: [%d, %d] and his index in path: %d\n\n", maze->dragon->position.y, maze->dragon->position.x, maze->dragon->index);
-
-    for (i = 0; i < maze->nodes_num; i++){
-        printf("i:%d id: %d path cost: %d known: %d src path node: %d source nodes %d,  ", i, maze->path[i].path_root->id, maze->path[i].cost, maze->path[i].known, maze->path[i].source_path->index_of_src_path_root, maze->path[i].source_path->num_of_src_path_nodes);
-        
-        current = maze->path[i].path_root;
-        while(current->next != NULL ){
-            printf(" [%d, %d] ->", current->position.y, current->position.x);
-            current = current->next;
-        }
-        printf(" [%d, %d]\n", current->position.y, current->position.x);
-    }
+    print_graph(maze);
 
     return path;
 }
