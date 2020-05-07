@@ -78,11 +78,28 @@ typedef struct maze{
     PATH *path;
 } MAZE;
 
-
+SOURCE_PATH *init_source_path(int size);
 PATH *init_path(int maze_width, int maze_height);
-MAZE *init_maze(int maze_width, int maze_height);
 PATH_NODE *init_path_node(int id, int path_node_cost, int pos_y, int pos_x);
 DRAGON *init_dragon(int t, int index, int pos_y, int pos_x);
+
+MAZE *init_maze(int maze_width, int maze_height);
+void re_init_maze(MAZE *maze);
+
+int *init_princess_index_arr();
+void init_princess_rescue_permutations(MAZE *maze, int permutations);
+MAZE *init_princess_rescue(MAZE *maze, int arr[], int size, int index);
+
+void print_graph(MAZE *maze);
+void print_princess_rescue_permutation(MAZE *maze, int factorial);
+void print_final_path(MAZE *maze, int *final_array);
+
+void free_dragon_path(MAZE *maze, int **dragon_path);
+void free_maze(MAZE *maze, int factorial);
+
+void get_number_of_princess_permutations(int *princess_num);
+void heapPermutation(MAZE *maze, int a[], int size, int index);
+void swappiness(int *a, int *b);
 
 MAZE *actualize_path(MAZE *maze, PATH_NODE *check_node, int index);
 int check_node_neighbors(MAZE *maze, char **map, int x, int y);
@@ -92,6 +109,10 @@ MAZE *create_edge(MAZE *maze, PATH_NODE *src, PATH_NODE *dst, int index);
 MAZE *create_vertex(MAZE *maze, PATH_NODE *new_node, char **map, int index);
 MAZE *load_maze(MAZE *maze, char **mapa, int t);
 
-#endif /* GRAPH_H */
+int **kil_the_dragon(MAZE *maze, int *dlzka_cesty);
+void actualize_princess_rescue_path(MAZE *maze, int starting_index, int ending_index, int princess_rescue_index);
+int cheapest_princess_rescue_path(MAZE *maze, int fatorial, int *dlzka_cesty);
 
+int *create_and_connect_final_path(MAZE *maze, int **path, int index_of_cheapest_path);
 int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty);
+#endif /* GRAPH_H */

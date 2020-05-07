@@ -1,8 +1,18 @@
 #include "graph.c"
 
+void free_map(char **map, int n){
+    int i;
+
+    for (i = 0; i < n; i++){
+        free(map[i]);
+    }
+    free(map);
+}
+
+
 int main(int argc, char const *argv[]){
     int i = 0, t1 = 6;
-    int *postupnost;
+    int *postupnost, *postupnost2;
     int *dlzka_cesty = (int *)malloc(sizeof(int));
     char **testing = (char **)malloc(4 * sizeof(char *));
 
@@ -41,6 +51,8 @@ int main(int argc, char const *argv[]){
     //     printf("[%d, %d]\n", postupnost[2 * i], postupnost[2 * i + 1]);
     // }
 
+    free_map(testing, 4);
+
     // /* Test map 2 */
     mapa_test[0]="CCHCNHCCHN";
     mapa_test[1]="NNCCCHHCCC";
@@ -64,6 +76,8 @@ int main(int argc, char const *argv[]){
         printf("[%d, %d]\n", postupnost[2 * i + 1], postupnost[2 * i]);
     }
 
-   
+    free(postupnost);
+    // free_map(mapa_test, n);
+
     return 0;
 }
