@@ -72,6 +72,7 @@ typedef struct maze{
     short princess_num;
     int nodes_num;
     int *princess_index_arr;
+    int total_path_lengt;
     DRAGON *dragon;
     PRINCESS_RESCUE *princess_rescue;
     PATH *path;
@@ -93,4 +94,4 @@ MAZE *load_maze(MAZE *maze, char **mapa, int t);
 
 #endif /* GRAPH_H */
 
-int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty);
+int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty);

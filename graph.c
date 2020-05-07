@@ -227,25 +227,29 @@ MAZE *load_maze(MAZE *maze, char **mapa, int t){
 
 
 int **kil_the_dragon(MAZE *maze, int *dlzka_cesty){
+    int indexer = maze->total_path_lengt = maze->path[maze->dragon->index].source_path->num_of_src_path_nodes;
+
     int path_node_index = maze->dragon->index, counter = 0;
     int **dragon_path = (int **)malloc((maze->width * maze->height) * sizeof(int *));
+    int dragon_index;
 
     PATH_NODE *root_path_node = maze->path[path_node_index].path_root;
     *dlzka_cesty = maze->path[path_node_index].cost;
 
-    while(root_path_node->id != maze->path[0].path_root->id){
-        dragon_path[counter] = (int *)malloc(2 * sizeof(int));
-        dragon_path[counter][0] = root_path_node->position.y;
-        dragon_path[counter][1] = root_path_node->position.x;
+    while(--indexer >= 0){
+        dragon_path[indexer] = (int *)malloc(2 * sizeof(int));
+        dragon_path[indexer][0] = root_path_node->position.y;
+        dragon_path[indexer][1] = root_path_node->position.x;
+
+        // printf("pocet policok potrebnych k drakovi: %d %d %d\n", indexer, dragon_path[indexer][0], dragon_path[indexer][1]);
 
         path_node_index = maze->path[path_node_index].source_path->index_of_src_path_root;
         root_path_node = maze->path[path_node_index].path_root;
-        counter++;
     }
 
-    dragon_path[counter] = (int *)malloc(2 * sizeof(int));
-    dragon_path[counter][0] = maze->path[0].path_root->position.y;
-    dragon_path[counter][1] = maze->path[0].path_root->position.x;
+    // dragon_path[counter] = (int *)malloc(2 * sizeof(int));
+    // dragon_path[counter][0] = maze->path[0].path_root->position.y;
+    // dragon_path[counter][1] = maze->path[0].path_root->position.x;
 
     return dragon_path;
 }
@@ -361,8 +365,17 @@ void print_princess_rescue_permutation(MAZE *maze, int factorial) {
 }
 
 
+void print_final_path(MAZE *maze, int *final_array){
+    printf("\n----- TOTAL FINAL ARRAY -----\n");
+    for (int d = 0; d <= maze->total_path_lengt; d++)
+        printf("[%d, %d]\n", final_array[2*d+1], final_array[2*d]);
+    printf("\n");
+
+}
+
+
 /* funkcia vrati index najlacnejsej cesty spomedzi permutacii */
-int cheapest_princess_rescue_path(MAZE *maze, int fatorial){
+int cheapest_princess_rescue_path(MAZE *maze, int fatorial, int *dlzka_cesty){
     int min, min_index, i;
 
     min = maze->princess_rescue[0].t;
@@ -374,14 +387,70 @@ int cheapest_princess_rescue_path(MAZE *maze, int fatorial){
             min_index = i;
         }
     }
+    *dlzka_cesty += maze->princess_rescue[min_index].t;
 
     return min_index;
 }
 
-int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
-    int starting_index, factorial;
-    int **path;
+
+int *create_and_connect_final_path(MAZE *maze, int **path, int index_of_cheapest_path){
+    int *final_array = (int *)malloc((2*maze->total_path_lengt) + 1 * sizeof(int));
     
+    for (int d = 0; d < maze->total_path_lengt; d++){
+        if(d <= (maze->total_path_lengt - maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path)){
+            final_array[2 * d] = path[d][0];
+            final_array[2 * d + 1] = path[d][1];
+        } else {
+            final_array[2 * d] = maze->princess_rescue[index_of_cheapest_path].rescue_path_of_princess_permutation
+            [d - (maze->total_path_lengt - maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path + 1)][0];
+            final_array[2 * d + 1] = maze->princess_rescue[index_of_cheapest_path].rescue_path_of_princess_permutation
+            [d - (maze->total_path_lengt - maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path + 1)][1];
+        }
+    }
+    final_array[2*maze->total_path_lengt] = -1;
+
+    return final_array;
+}
+
+
+void free_maze(MAZE *maze, int factorial){
+    PATH_NODE *current, *previous;
+
+    free(maze->princess_index_arr);
+    free(maze->dragon);
+
+    for (int i = 0; i < factorial; i++){
+        free(maze->princess_rescue[i].permutation_of_princess_indexes);
+        for (int j = 0; j < (maze->width * maze->height * 4); j++)
+            free(maze->princess_rescue[i].rescue_path_of_princess_permutation[j]);
+        
+        free(maze->princess_rescue[i].rescue_path_of_princess_permutation);
+    }
+
+    for (int i = 0; i < (maze->width * maze->height); i++){
+        current = maze->path[i].path_root != NULL ? maze->path[i].path_root->next : maze->path[i].path_root;
+        
+        while(current != NULL){
+            previous = current;
+            current = current->next;
+            free(previous);
+        }
+
+        free(current);
+        free(maze->path[i].source_path);
+    }
+    free(maze->path);
+
+    free(maze->princess_rescue);
+    free(maze);
+}
+
+
+int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
+    int starting_index, factorial, index_of_cheapest_path;
+    int *final_array;
+    int **path;
+
     starting_index = 0;
 
     MAZE *maze = init_maze(m, n);
@@ -434,13 +503,19 @@ int **zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
         starting_index = maze->dragon->index;
     }
 
-    printf("najlacnejsia cesta ma hodnotu: %d\n", cheapest_princess_rescue_path(maze, factorial));
+    index_of_cheapest_path =  cheapest_princess_rescue_path(maze, factorial, dlzka_cesty);
+    maze->total_path_lengt += (maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path - 1);
+    final_array = create_and_connect_final_path(maze, path, index_of_cheapest_path);
+
+    /* for printing final path */
+    // print_final_path(maze, final_array);
 
     /* printing permutation and their cost and path */
-    print_princess_rescue_permutation(maze, factorial);
+    // print_princess_rescue_permutation(maze, factorial);
 
     /* fn for printing graph as adjacency list */
-    print_graph(maze);
+    // print_graph(maze);
 
-    return path;
+    free_maze(maze, factorial);
+    return final_array;
 }
