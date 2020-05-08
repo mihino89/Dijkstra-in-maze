@@ -1,6 +1,7 @@
 #include "dijkstra.h"
 #include "binary_heap.c"
 
+
 void init_starting_vertex(MAZE *maze, int index){
     maze->path[index].cost = 0;
     maze->path[index].known = TRUE;
@@ -45,12 +46,24 @@ void find_and_update_neighboor(MAZE *maze, PATH_NODE *current_path_node, HEAP *h
 }
 
 
-void check_and_update_src_paths(MAZE *maze, int starting_index){
+int check_and_update_src_paths(MAZE *maze, int starting_index){
     int index_counter;
 
     for (int i = 0; i < maze->nodes_num; i++){
         if (maze->path[i].known == FALSE){
-            printf("nasiel som neobjaveny node, skontroluj to nieje princezna!\n");
+            for (int j = 0; j < maze->princess_num; j++){
+                /* Kontrola ci sa jedna o princeznu - ak ano tak je zle a neviem sa k nim dostat */
+                if(i == maze->princess_index_arr[j]){
+                    printf("Zle je, princezna zabednena! %d %d\n", i, maze->princess_index_arr[j]);
+                    return 0;
+                }
+            }
+
+            /* Kontrola ci sa jedna o draka - ak ano tak je zle a neviem sa k nim dostat */
+            if(i == maze->dragon->index){
+                printf("Zle je, drak zabedneny! %d %d\n", i, maze->dragon->index);
+                return 0;
+            }
         } else{
             /* pripocitam najdeny node ako source */
             maze->path[i].source_path->num_of_src_path_nodes++;
@@ -72,16 +85,21 @@ void check_and_update_src_paths(MAZE *maze, int starting_index){
             }            
         }
     }
+
+    return 1;
 }
 
-
-MAZE *dijkstra(MAZE *maze, int starting_index){
+int dijkstra(MAZE *maze, int starting_index){
     PATH_NODE *current;
     HEAP *heap;
-    int *index = (int *)malloc(sizeof(int));
+    int *index;
+   
+    index = (int *)malloc(sizeof(int));
 
     heap = init_heap(maze->nodes_num);
     init_starting_vertex(maze, starting_index);
+
+    // printf("maze path root cost: %d\n", maze->path[*index].path_root->cost);
 
     find_and_update_neighboor(maze, maze->path[starting_index].path_root->next, heap, maze->path[starting_index].cost, starting_index);
 
@@ -91,7 +109,10 @@ MAZE *dijkstra(MAZE *maze, int starting_index){
         find_and_update_neighboor(maze, maze->path[*index].path_root->next, heap, maze->path[*index].cost, *index);
     }
 
-    check_and_update_src_paths(maze, starting_index);
+    if(check_and_update_src_paths(maze, starting_index) == 0){
+        maze = NULL;
+        return 0;
+    }
 
-    return maze;
+    return 1;
 }

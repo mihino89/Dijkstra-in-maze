@@ -13,9 +13,11 @@ void free_map(char **map, int n){
 }
 
 
-void print_map(char **map, int size){
-    for (int i = 0; i < size; i++){
-        for (int j = 0; j < size; j++){
+void print_map(char **map, int y, int x){
+    int i, j;
+
+    for (i = 0; i < y; i++){
+        for (j = 0; j < x; j++){
             printf("%c", map[i][j]);
         }
         printf("\n");
@@ -23,24 +25,33 @@ void print_map(char **map, int size){
 }
 
 
-char **load_map(int maze_size){
+char **load_map(int y, int x, int map_id){
     FILE *f;
     int i, j;
     char **map;
 
-    switch (maze_size){
-    case 4:
+    switch (map_id){
+    case 0:
         f=fopen("./testing_maps/mapa_4x4.txt","r");
-        map = (char**)malloc(maze_size * sizeof(char*));
         break;
-    
+    case 1:
+        f=fopen("./testing_maps/mapa_10x10.txt","r");
+        break;
+    case 2:
+        f=fopen("./testing_maps/mapa_100x100.txt","r");
+        break;
+    case 15:
+        return NULL;
     default:
-        break;
+        printf("Nenasiel som subor mapy\n");
+        return NULL;
     }
 
-    for(i=0; i<maze_size; i++){
-        map[i] = (char *)malloc(maze_size * sizeof(char));
-        for (j = 0; j< maze_size; j++){
+    map = (char**)malloc(y * sizeof(char*));
+
+    for(i=0; i < y; i++){
+        map[i] = (char *)malloc(x * sizeof(char));
+        for (j = 0; j < x; j++){
             char policko = fgetc(f);
             if(policko == '\n') 
                 policko = fgetc(f);
@@ -66,14 +77,12 @@ void print_path(int *path, int dlzka_cesty){
 }
 
 
-void dijkstra_testing_env(char **map, int size, int t){
+void dijkstra_testing_env(char **map, int y, int x, int t){
     int *path;
     int *dlzka_cesty = (int *)malloc(sizeof(int));
 
-    if((path = zachran_princezne(map, size, size, t, dlzka_cesty)) == NULL){
-        printf("Sorry, nedokazal som najst kratsiu cestu ako je t (%d)\n", t);
+    if((path = zachran_princezne(map, y, x, t, dlzka_cesty)) == NULL)
         return;
-    }
 
     print_path(path, *dlzka_cesty);
 
@@ -82,12 +91,14 @@ void dijkstra_testing_env(char **map, int size, int t){
 }
 
 void testing_enviroment(){
-    int choice, size, t;
+    int choice, t, y, x;
     char **map;
 
     printf("======= Vitajte v testovacom prostredi algoritmu dijkstra, minimalnej haldy a heap algoritmu! =======\n");
     printf("Prosim vyberte si test (cislo 0-1):\n");
     printf("\t- 0. Zakladny test 4x4\n");
+    printf("\t- 1. Zakladny test 10x10\n");
+    printf("\t- 2. Zakladny test 100x100 - Drak nenajdeny\n");
     printf("\t- 15. Nechcem uz testovat\n");
 
     printf("Test cislo: ");
@@ -95,58 +106,32 @@ void testing_enviroment(){
 
     switch (choice){
     case 0:
-        map = load_map(4);
-        size = 4;
+        y = x = 4;
         t = 6;
-        print_map(map, 4);
-        /* code */
         break;
-    
+    case 1:
+        y = x = 10;
+        t = 12;
+        break;
+    case 2:
+        y = x = 100;
+        t = 1200;
+        break;
     default:
         break;
     }
 
-    dijkstra_testing_env(map, size, t);
-    free_map(map, size);
+    map = load_map(y, x, choice);
+    if(map != NULL){
+        print_map(map, y, x);
+
+        dijkstra_testing_env(map, y, x, t);
+        free_map(map, y);
+    }
 }
 
 int main(int argc, char const *argv[]){
     testing_enviroment();
-    // int i = 0, t1 = 6;
-    // int *postupnost, *postupnost2;
-    // int *dlzka_cesty = (int *)malloc(sizeof(int));
-    // char **testing = (char **)malloc(4 * sizeof(char *));
-
-    // *dlzka_cesty = 0;
-
-    // int n = 10, m = 10, t = 12;
-    // char **mapa_test = (char **)malloc(n * sizeof(char *));
-
-    // /* Test map 2 */
-    // mapa_test[0]="CCHCNHCCHN";
-    // mapa_test[1]="NNCCCHHCCC";
-    // mapa_test[2]="DNCCNNHHHC";
-    // mapa_test[3]="CHHHCCCCCC";
-    // mapa_test[4]="CCCCCNHHHH";
-    // mapa_test[5]="PCHCCCNNNN";
-    // mapa_test[6]="NNNNNHCCCC";
-    // mapa_test[7]="CCCCCPCCCC";
-    // mapa_test[8]="CCCNNHHHHH";
-    // mapa_test[9]="HHHPCCCCCC";
-
-    // postupnost = zachran_princezne(mapa_test, n, m, t, dlzka_cesty);
-
-    // printf("\n\n---- Konecna postupnost ku drakovi -----\n");
-    // printf("Najkratsia cesta s casom: %d\n", *dlzka_cesty);
-
-    // for (i = 0; i < 25; i++){
-    //     if(postupnost[2*i] == -1  || postupnost[2*i+1] == -1)
-    //         break;
-    //     printf("[%d, %d]\n", postupnost[2 * i + 1], postupnost[2 * i]);
-    // }
-
-    // free(postupnost);
-    // // free_map(mapa_test, n);
 
     return 0;
 }

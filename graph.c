@@ -358,23 +358,32 @@ MAZE *load_maze(MAZE *maze, char **mapa, int t){
 
 /* Fn for order coordinates of cheapest path to dragon from dijsktra algorithm */
 int **kil_the_dragon(MAZE *maze, int *dlzka_cesty){
-    int indexer = maze->total_path_lengt = maze->path[maze->dragon->index].source_path->num_of_src_path_nodes;
+    int num_of_src_nodes, src_node_index;
+    int **dragon_path;
 
-    int path_node_index = maze->dragon->index, counter = 0;
-    int **dragon_path = (int **)malloc((maze->width * maze->height) * sizeof(int *));
+    dragon_path = (int **)malloc((maze->width * maze->height) * sizeof(int *));
 
-    PATH_NODE *root_path_node = maze->path[path_node_index].path_root;
-    *dlzka_cesty = maze->path[path_node_index].cost;
+    /**
+     * num of src nodes = pocet krokov ktore potrebuje urobit od src node k destination node
+     * aktualizacia poctu krokov ktore je potrebne spravit pre dosiahnutie cieloveho node-u
+    */
+    num_of_src_nodes = maze->total_path_lengt = maze->path[maze->dragon->index].source_path->num_of_src_path_nodes;
 
-    while(--indexer >= 0){
-        dragon_path[indexer] = (int *)malloc(2 * sizeof(int));
-        dragon_path[indexer][0] = root_path_node->position.y;
-        dragon_path[indexer][1] = root_path_node->position.x;
+    /* src index na zaciatku bude index draka v grafe */
+    src_node_index = maze->dragon->index;
+    PATH_NODE *root_path_node = maze->path[src_node_index].path_root;
 
-        // printf("pocet policok potrebnych k drakovi: %d %d %d\n", indexer, dragon_path[indexer][0], dragon_path[indexer][1]);
+    /* k celkovej dlzke pripocitam hodnotu prveho policka v mape, ktore nie je zapocitane v dst node coste */
+    *dlzka_cesty = maze->path[src_node_index].cost + maze->path[0].path_root->cost;
 
-        path_node_index = maze->path[path_node_index].source_path->index_of_src_path_root;
-        root_path_node = maze->path[path_node_index].path_root;
+    while(--num_of_src_nodes >= 0){
+        dragon_path[num_of_src_nodes] = (int *)malloc(2 * sizeof(int));
+        dragon_path[num_of_src_nodes][0] = root_path_node->position.y;
+        dragon_path[num_of_src_nodes][1] = root_path_node->position.x;
+        
+        /* Najdem index src node-u a zmenim root_path_node na src node */
+        src_node_index = maze->path[src_node_index].source_path->index_of_src_path_root;
+        root_path_node = maze->path[src_node_index].path_root;
     }
 
     return dragon_path;
@@ -383,29 +392,34 @@ int **kil_the_dragon(MAZE *maze, int *dlzka_cesty){
 
 /* Fn for order coordinates of cheapest path to princess from dijsktra algorithm */
 void actualize_princess_rescue_path(MAZE *maze, int starting_index, int ending_index, int princess_rescue_index){
-    int indexer = maze->path[ending_index].source_path->num_of_src_path_nodes;
-    int index_rescue_perm;
-    // printf("pocet policok k princeznej doteraz: %d potrebne pre tento usek dalsich: %d\n", maze->princess_rescue[princess_rescue_index].num_princess_rescue_path, maze->path[ending_index].source_path->num_of_src_path_nodes);
+
+    /* pocet krokov ktore potrebuje urobit od src node k destination node */
+    int num_of_src_nodes = maze->path[ending_index].source_path->num_of_src_path_nodes;
+    int act_index;
+
+    /* destination node */
     PATH_NODE *root_path_node = maze->path[ending_index].path_root;
 
-    int i = maze->princess_rescue[princess_rescue_index].num_princess_rescue_path;
+    /* aktualny celkovy index v poli rescue path of princess - urcuje kolko krokov som potreboval doteraz spravit pre zahranu princezien */
+    int total_steps_in_rescue_princess_path = maze->princess_rescue[princess_rescue_index].num_princess_rescue_path;
+    // printf("pocet policok k princeznej doteraz: %d potrebne pre tento usek dalsich: %d, id: %d\n", total_steps_in_rescue_princess_path, num_of_src_nodes, root_path_node->id);
 
-    /* Skacem na src node, kym sa nedostanem na zaciatocny node, kde moja cesta zacala a postupne cestu ukladam do pola */
+    /* 
+    * Skacem na src node, kym sa nedostanem na zaciatocny node, kde moja cesta zacala 
+    * postupne cestu ukladam do pola avsak v preusporiadanom poradi src->dst
+    */
     while (root_path_node->id != maze->path[starting_index].path_root->id){
-        index_rescue_perm = indexer + i - 2;
+        act_index = num_of_src_nodes + total_steps_in_rescue_princess_path - 2;
 
-        maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm] = (int *)malloc(2 * sizeof(int));
-        maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm][0] = root_path_node->position.y;
-        maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[index_rescue_perm][1] = root_path_node->position.x;
+        maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[act_index] = (int *)malloc(2 * sizeof(int));
+        maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[act_index][0] = root_path_node->position.y;
+        maze->princess_rescue[princess_rescue_index].rescue_path_of_princess_permutation[act_index][1] = root_path_node->position.x;
 
         ending_index = maze->path[ending_index].source_path->index_of_src_path_root;
         root_path_node = maze->path[ending_index].path_root;
         maze->princess_rescue[princess_rescue_index].num_princess_rescue_path++;
-        i--;
+        num_of_src_nodes--;
     }
-
-    // index_rescue_perm = indexer + i - 1;
-    // // printf("ukladam na index: %d\n", index_rescue_perm);
 }
 
 
@@ -433,23 +447,27 @@ int cheapest_princess_rescue_path(MAZE *maze, int fatorial, int *dlzka_cesty){
  */
 int *create_and_connect_final_path(MAZE *maze, int **path, int index_of_cheapest_path){
     int *final_array = (int *)malloc((2*maze->total_path_lengt) + 1 * sizeof(int));
-    int i;
+    int i, length_of_cheapest_path_princess_rescue;
 
-    for (i = 0; i < maze->total_path_lengt; i++){
+    length_of_cheapest_path_princess_rescue = maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path;
+    // printf("length of cheapest path: %d\n", length_of_cheapest_path_princess_rescue);
+
+    for (i = 0; i <= maze->total_path_lengt; i++){
         /* Overenie ci index patri ceste k drakovi (if) alebo k ceste k princeznam (else) */
-        if(i <= (maze->total_path_lengt - maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path)){
+        if(i <= (maze->total_path_lengt - length_of_cheapest_path_princess_rescue)){
             final_array[2 * i] = path[i][0];
             final_array[2 * i + 1] = path[i][1];
         } else {
             final_array[2 * i] = maze->princess_rescue[index_of_cheapest_path].rescue_path_of_princess_permutation
-            [i - (maze->total_path_lengt - maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path + 1)][0];
+            [i - (maze->total_path_lengt - length_of_cheapest_path_princess_rescue + 1)][0];
             final_array[2 * i + 1] = maze->princess_rescue[index_of_cheapest_path].rescue_path_of_princess_permutation
-            [i - (maze->total_path_lengt - maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path + 1)][1];
+            [i - (maze->total_path_lengt - length_of_cheapest_path_princess_rescue + 1)][1];
+            // printf("[%d, %d]\n",final_array[2 * i], final_array[2 * i + 1]);
         }
     }
 
     /* Nakoniec vlozenie -1 aby som pri vypise vedel kedy skoncit */
-    final_array[2*maze->total_path_lengt] = -1;
+    final_array[2 * i] = -1;
 
     /* Uvolnenie path k drakovi */
     free_dragon_path(maze, path);
@@ -467,16 +485,21 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
 
     MAZE *maze = init_maze(m, n);
     maze = load_maze(maze, mapa, t);
+  
+    /* Ak maze == NULL znamena ze k drakovi nevedie cesta */
+    if(dijkstra(maze, starting_index) == 0){
+        // print_graph(maze);
+        printf("K drakovi nevedie cesta\n");
+        return NULL;
+    }
 
-    maze = dijkstra(maze, starting_index);
     path = kil_the_dragon(maze, dlzka_cesty);
 
-    /**
-     * kontrola cas t najdenej cesty, ak je mensi rovny ako t pokracuj v zachrane princezien
-     * a teda znamena to, ze som stihol zachranit princeznu v cas limite
-    */
-    if(*dlzka_cesty > t)
-        return NULL;
+    /* kontrola ak najdena cesta je dlhsia ako t tak som existuje kratsia cesta alebo t je nedosiahnutelne */
+    if(*dlzka_cesty > t){
+       printf("Sorry, nedokazal som najst kratsiu cestu ako je t (%d)\n", t);
+       return NULL;
+    }
 
     /**
      * starting index je index draka, zisti permutacie a vykonaj a porovnaj ich
@@ -493,15 +516,19 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
 
     /* prechadzam polia moznych permutacii hladania princezien */ 
     for (int m = 0; m < factorial; m++){
-        
+
         /* prechadzam jednotlivo danu permutaciu */
         for (int n = 0; n < maze->princess_num; n++){
 
             /* Precistujem bludisko a pripravujem na novu dijsktru */
-            re_init_maze(maze);
+            re_init_maze(maze);       
 
-            /* Prva cesta je vzdy od draka k prvej permutacii princeznej */
-            maze = dijkstra(maze, starting_index);
+            /* kontrola ci cesta k princeznej je pristupna */
+            if(dijkstra(maze, starting_index) == 0){
+                printf("Neviem sa dostat k princeznej\n");
+                *dlzka_cesty = 0;
+                return NULL;
+            }
 
             /* aktualizujem cestu permutacie */
             actualize_princess_rescue_path(maze, starting_index, maze->princess_rescue[m].permutation_of_princess_indexes[n], m);
@@ -520,6 +547,7 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     /* Najde najlacnejsiu cestu spomedzi permutacii */
     index_of_cheapest_path = cheapest_princess_rescue_path(maze, factorial, dlzka_cesty);
 
+    // printf("total length:  %d\n", maze->total_path_lengt);
     /* K zatial docastnej casovej narocnosti cesty k drakovi pripocitava casovu narocnost hladania princezien */
     maze->total_path_lengt += (maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path - 1);
 

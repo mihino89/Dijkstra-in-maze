@@ -97,22 +97,17 @@ void heapifyTtB(HEAP *heap, int index){
     left_child = &heap->heap_node[left];
     right_child = &heap->heap_node[right];
 
-    // printf("left: %d left_child val: %d right: %d right child val: %d parent index: %d parent val: %d\n", left, left_child->value, right, right_child->value, index, heap->heap_node[index].value);
-
     if((left < heap->heap_act_size && heap->heap_node[index].value > left_child->value) && (right < index && heap->heap_node[index].value > right_child->value)){
-        // printf("HAHAHAHHA\n");
         swap_heap_nodes(&heap->heap_node[index], left_child->value < right_child->value ? &heap->heap_node[left] : &heap->heap_node[right]);
         heapifyTtB(heap, left_child->value < right_child->value
                              ? left_child->value
                              : right_child->value);
     }
     if(left < heap->heap_act_size && heap->heap_node[index].value > left_child->value){
-        // printf("HAHAHAHHA2\n");
         swap_heap_nodes(&heap->heap_node[index], &heap->heap_node[left]);
         heapifyTtB(heap, left_child->value);
     }
     if(right < heap->heap_act_size && heap->heap_node[index].value > right_child->value){
-        // printf("HAHAHAHHA3\n");
         swap_heap_nodes(&heap->heap_node[index], &heap->heap_node[right]);
         heapifyTtB(heap, right_child->value);
     }

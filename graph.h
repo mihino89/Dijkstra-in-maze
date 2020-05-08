@@ -15,7 +15,9 @@
 
 #define FOREST_PATH_VALUE 1
 #define SLOW_PATH_VALUE   2
-#define PRINCESS_HELPER   3
+
+#define DRAGON_DIJKSTRA     1
+#define PRINCESS_DIJKSTRA   2
 
 #define MAX_NUM_OF_PRINCESS 5
 #define INFINITY        10000
