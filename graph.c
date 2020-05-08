@@ -284,7 +284,7 @@ MAZE *add_neighboor_to_path(MAZE *maze, PATH_NODE *new_node, int neighboor_value
     
     PATH_NODE *neighboor_node;
 
-    neighboor_node = init_path_node(y * 10 + x, neighboor_value, y, x);
+    neighboor_node = init_path_node((y * 100) + x, neighboor_value, y, x);
     
     maze = create_edge(maze, new_node, neighboor_node, index);
     return maze;
@@ -333,7 +333,7 @@ MAZE *load_maze(MAZE *maze, char **mapa, int t){
         for (x = 0; x < maze->width; x++){
             if (mapa[y][x] == FOREST_PATH || mapa[y][x] == SLOW_WAY || mapa[y][x] == PRINC || mapa[y][x] == DRAG){
                 
-                new_node = init_path_node(y * 10 + x, mapa[y][x] == SLOW_WAY ? SLOW_PATH_VALUE : FOREST_PATH_VALUE, y, x);
+                new_node = init_path_node(y * 100 + x, mapa[y][x] == SLOW_WAY ? SLOW_PATH_VALUE : FOREST_PATH_VALUE, y, x);
                 
                 /* Saving index of the princess */
                 if(mapa[y][x] == PRINC){
@@ -485,10 +485,16 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
 
     MAZE *maze = init_maze(m, n);
     maze = load_maze(maze, mapa, t);
-  
+
+    /* Kontrola ci sa v bludisku nachadzaja aspon jedna princezna */
+    if(maze->princess_num == 0 || maze->dragon == NULL){
+        printf("V bludisko sa nenachadza minimalne jedna princezna alebo drak\n");
+        return NULL;
+    }
+
     /* Ak maze == NULL znamena ze k drakovi nevedie cesta */
     if(dijkstra(maze, starting_index) == 0){
-        // print_graph(maze);
+        print_graph(maze);
         printf("K drakovi nevedie cesta\n");
         return NULL;
     }
@@ -516,6 +522,7 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
 
     /* prechadzam polia moznych permutacii hladania princezien */ 
     for (int m = 0; m < factorial; m++){
+        // printf("m: %d\n", m);
 
         /* prechadzam jednotlivo danu permutaciu */
         for (int n = 0; n < maze->princess_num; n++){

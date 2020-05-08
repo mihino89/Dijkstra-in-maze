@@ -16,6 +16,7 @@ void set_known_root_node(MAZE *maze, int index){
 
 /* najdem node z LL ako root node a updatujem mu paht cost */
 void change_path_cost(MAZE *maze, PATH_NODE *path_node, HEAP *heap, int root_path_cost, int root_path_index){
+    // printf("root node id: %d \n", path_node->id);
     for (int i = 0; i < maze->nodes_num; i++){
 
         /* najdem pozadovany path node v path (verticalnom smere) */ 
@@ -26,6 +27,10 @@ void change_path_cost(MAZE *maze, PATH_NODE *path_node, HEAP *heap, int root_pat
                 maze->path[i].cost = path_node->cost + root_path_cost;
                 maze->path[i].source_path->index_of_src_path_root = root_path_index;
                 heap = insert_heap_node(heap, i, path_node->cost + root_path_cost);
+                // if(root_path_cost == 0){
+                //     // printf("root node id: %d %d\n", path_node->id, i);
+                //     print_heap(heap);
+                // }
             }
 
             return;
@@ -65,6 +70,7 @@ int check_and_update_src_paths(MAZE *maze, int starting_index){
                 return 0;
             }
         } else{
+            
             /* pripocitam najdeny node ako source */
             maze->path[i].source_path->num_of_src_path_nodes++;
             
@@ -72,7 +78,6 @@ int check_and_update_src_paths(MAZE *maze, int starting_index){
              * ak dany pathroot nie je zaciatok cesty tak mas dany path root node source node
              * tak pokracuj az kym nepridem na node zaciatku cesty
             */
-
             if (maze->path[i].path_root->id != maze->path[starting_index].path_root->id){
                 index_counter = maze->path[i].source_path->index_of_src_path_root;
 
@@ -103,6 +108,7 @@ int dijkstra(MAZE *maze, int starting_index){
 
     find_and_update_neighboor(maze, maze->path[starting_index].path_root->next, heap, maze->path[starting_index].cost, starting_index);
 
+    int i = 0;
     /* vyberam kym je nieco v halde */
     while((heap = push_and_pop_min(heap, index)) != NULL){
         set_known_root_node(maze, *index);

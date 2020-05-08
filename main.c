@@ -40,6 +40,24 @@ char **load_map(int y, int x, int map_id){
     case 2:
         f=fopen("./testing_maps/mapa_100x100.txt","r");
         break;
+    case 3:
+        f=fopen("./testing_maps/mapa_5x4.txt","r");
+        break;
+    case 4:
+        f=fopen("./testing_maps/mapa_2x7.txt","r");
+        break;
+    case 5:
+        f=fopen("./testing_maps/mapa_5x15.txt","r");
+        break;
+    case 6:
+        f=fopen("./testing_maps/mapa_3x3.txt","r");
+        break;
+    case 7:
+        f=fopen("./testing_maps/mapa_5x5.txt","r");
+        break;
+    case 8:
+        f=fopen("./testing_maps/mapa_20x20.txt","r");
+        break;
     case 15:
         return NULL;
     default:
@@ -69,7 +87,7 @@ void print_path(int *path, int dlzka_cesty){
     printf("\n---- Konecna postupnost -----\n");
     printf("Najkratsia cesta s casom: %d\n", dlzka_cesty);
 
-    for (i = 0; i < 25; i++){
+    for (i = 0; i < INFINITY; i++){
         if(path[2*i] == -1  || path[2*i+1] == -1)
             break;
         printf("[%d, %d]\n", path[2 * i + 1], path[2 * i]);
@@ -87,7 +105,7 @@ void dijkstra_testing_env(char **map, int y, int x, int t){
     print_path(path, *dlzka_cesty);
 
     free(dlzka_cesty);
-    free(path);
+    // free(path);
 }
 
 void testing_enviroment(){
@@ -98,7 +116,13 @@ void testing_enviroment(){
     printf("Prosim vyberte si test (cislo 0-1):\n");
     printf("\t- 0. Zakladny test 4x4\n");
     printf("\t- 1. Zakladny test 10x10\n");
-    printf("\t- 2. Zakladny test 100x100 - Drak nenajdeny\n");
+    printf("\t- 2. Zakladny test 100x100 - NEFUNGUJE!\n");
+    printf("\t- 3. Test na hladanie optimalnej cesty zachrany princezien 5x4\n");
+    printf("\t- 4. Test v bludisku sa nenachadza ziadna princezna 2x7\n");
+    printf("\t- 5. Zakladny test (cesta k drakovi cez princeznu) 5x15\n");
+    printf("\t- 6. Zakladny test (cesta k drakovi cez princeznu) 3x3\n");
+    printf("\t- 7. Zakladny test (cesta k drakovi cez princeznu (4 P)) 5x5\n");
+    printf("\t- 8. The real maze! 20x20\n");
     printf("\t- 15. Nechcem uz testovat\n");
 
     printf("Test cislo: ");
@@ -117,13 +141,40 @@ void testing_enviroment(){
         y = x = 100;
         t = 1200;
         break;
+    case 3:
+        y = 5;
+        x = 4;
+        t = 11;
+        break;
+    case 4:
+        y = 2;
+        x = 7;
+        t = 10;
+        break;
+    case 5:
+        y = 5;
+        x = 15;
+        t = 100;
+        break;
+    case 6:
+        y = x = 3;
+        t = 8;
+        break;
+    case 7:
+        y = x = 5;
+        t = 74;
+        break;
+    case 8:
+        y = x = 20;
+        t = 20000;
+        break;
     default:
         break;
     }
 
     map = load_map(y, x, choice);
     if(map != NULL){
-        print_map(map, y, x);
+        // print_map(map, y, x);
 
         dijkstra_testing_env(map, y, x, t);
         free_map(map, y);
@@ -135,3 +186,8 @@ int main(int argc, char const *argv[]){
 
     return 0;
 }
+
+
+/**
+ * TODO -- program pada ak n je vacsie ako 10? - bug je v ideckach potom lebo [0,11] = [0,1] a to nechcem 
+*/
