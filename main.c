@@ -32,13 +32,13 @@ char **load_map(int y, int x, int map_id){
 
     switch (map_id){
     case 0:
-        f=fopen("./testing_maps/mapa_4x4.txt","r");
-        break;
-    case 1:
         f=fopen("./testing_maps/mapa_10x10.txt","r");
         break;
+    case 1:
+        f=fopen("./testing_maps/mapa_4x4_variant1P.txt","r");
+        break;
     case 2:
-        f=fopen("./testing_maps/mapa_100x100.txt","r");
+        f=fopen("./testing_maps/mapa_4x4.txt","r");
         break;
     case 3:
         f=fopen("./testing_maps/mapa_5x4.txt","r");
@@ -78,6 +78,36 @@ char **load_map(int y, int x, int map_id){
         break;
     case 15:
         f=fopen("./testing_maps/mapa_7x7.txt","r");
+        break;
+    case 19:
+        f=fopen("./testing_maps/mapa_100x100.txt","r");
+        break;
+    case 20:
+        f=fopen("./testing_maps/mapa_1x1.txt","r");
+        break;
+    case 21:
+        f=fopen("./testing_maps/mapa_1x1_variant_drak.txt","r");
+        break;
+    case 22:
+        f=fopen("./testing_maps/mapa_1x2.txt","r");
+        break;
+    case 23:
+        f=fopen("./testing_maps/mapa_1x3.txt","r");
+        break;
+    case 24:
+        f=fopen("./testing_maps/mapa_2x4.txt","r");
+        break;
+    case 25:
+        f=fopen("./testing_maps/mapa_2x7.txt","r");
+        break;
+    case 26:
+        f=fopen("./testing_maps/mapa_15x15.txt","r");
+        break;
+    case 27:
+        f=fopen("./testing_maps/mapa_7x8.txt","r");
+        break;
+    case 28:
+        f=fopen("./testing_maps/mapa_5x5_nepriechod.txt","r");
         break;
     case 16:
         return NULL;
@@ -133,11 +163,11 @@ void testing_enviroment(){
 
     printf("======= Vitajte v testovacom prostredi algoritmu dijkstra, minimalnej haldy a heap algoritmu! =======\n");
     printf("Prosim vyberte si test (cislo 0-1):\n");
-    printf("\t- 0. Test 4x4\n");
-    printf("\t- 1. Test 10x10\n");
-    printf("\t- 2. Test 100x100 - NEFUNGUJE!\n");
+    printf("\t- 0. Test ukazkovy 10x10 - 3P\n");
+    printf("\t- 1. Test zakladny 4x4 - 1P\n");
+    printf("\t- 2. Test zakladny 4x4 - 3P\n");
+    //tu pokracuj v upratani testov 
     printf("\t- 3. Test na hladanie optimalnej cesty zachrany princezien 5x4\n");
-    printf("\t- 4. Test v bludisku sa nenachadza ziadna princezna 2x7\n");
     printf("\t- 5. Test (cesta k drakovi cez princeznu) 5x15\n");
     printf("\t- 6. Test (cesta k drakovi cez princeznu) 3x3\n");
     printf("\t- 7. Test (cesta k drakovi cez princeznu (4 P)) 5x5\n");
@@ -149,6 +179,16 @@ void testing_enviroment(){
     printf("\t- 13. Zabednena princezna 50x50 - Bug\n");
     printf("\t- 14. Test 6X6 - zabedneny drak\n");
     printf("\t- 15. Test 7X7 - zabednena princezna\n");
+    printf("\t- 19. Test velky 100x100 - 5P\n");
+    printf("\t- 20. Test krajnych pripadov 1x1 - ziadna princezna ani drak\n");
+    printf("\t- 21. Test krajnych pripadov 1x1 - ziadna princezna iba drak\n");
+    printf("\t- 22. Test krajnych pripadov 1x2 - jedna princezna a drak\n");
+    printf("\t- 23. Test krajnych pripadov 1x3 - drak a zablokovana princezna verticalne\n");
+    printf("\t- 24. Test krajnych pripadov 2x4 - jedna princezna a zablokovany drak\n");
+    printf("\t- 25. Test krajnych pripadov 2x7 - v bludisku sa nenachadza ziadna princezna\n");
+    printf("\t- 26. Test krajnych pripadov 15x15 - 2 princezne a drak zablokovane horizontalne\n");
+    printf("\t- 27. Test krajnych pripadov 7x8 - 4 princezne a ziadny drak\n");
+    printf("\t- 28. Test krajnych pripadov 5x5 - nepriechodna sachovnica k princeznej\n");
     printf("\t- 16. Nechcem uz testovat\n");
 
     printf("Test cislo: ");
@@ -156,16 +196,16 @@ void testing_enviroment(){
 
     switch (choice){
     case 0:
-        y = x = 4;
-        t = 6;
-        break;
-    case 1:
         y = x = 10;
         t = 12;
         break;
+    case 1:
+        y = x = 4;
+        t = 6;
+        break;
     case 2:
-        y = x = 100;
-        t = 1200;
+        y = x = 4;
+        t = 6;
         break;
     case 3:
         y = 5;
@@ -173,9 +213,7 @@ void testing_enviroment(){
         t = 11;
         break;
     case 4:
-        y = 2;
-        x = 7;
-        t = 10;
+       
         break;
     case 5:
         y = 5;
@@ -225,6 +263,51 @@ void testing_enviroment(){
     case 15:
         y = x = 7;
         t = 300;
+        break;
+    case 19:
+        y = x = 100;
+        t = 1200;
+        break;
+    case 20:
+        y = x = 1;
+        t = 0;
+        break;
+    case 21:
+        y = x = 1;
+        t = 1;
+        break;
+    case 22:
+        y = 1;
+        x = 2;
+        t = 1;
+        break;
+    case 23:
+        y = 1;
+        x = 3;
+        t = 1;
+        break;
+    case 24:
+        y = 2;
+        x = 4;
+        t = 5;
+        break;
+    case 25:
+        y = 2;
+        x = 7;
+        t = 10;
+        break;
+    case 26:
+        y = x = t = 15;
+        break;
+    case 27:
+        y = 7;
+        x = 8;
+        t = 10;
+        break;
+    case 28:
+        y = 5;
+        x = 5;
+        t = 10;
         break;
     default:
         break;

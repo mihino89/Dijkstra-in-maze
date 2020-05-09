@@ -73,14 +73,14 @@ int check_and_update_src_paths(MAZE *maze, int starting_index){
 
                 /* Kontrola ci sa jedna o princeznu - ak ano tak je zle a neviem sa k nim dostat */
                 if(i == maze->princess_index_arr[j]){
-                    printf("Zle je, princezna zabednena! %d %d\n", i, maze->princess_index_arr[j]);
+                    printf("Princezna zablokovana!\n");
                     return 0;
                 }
             }
 
             /* Kontrola ci sa jedna o draka - ak ano tak je zle a neviem sa k nim dostat */
             if(i == maze->dragon->index){
-                printf("Zle je, drak zabedneny! %d %d\n", i, maze->dragon->index);
+                printf("Drak zablokovany!\n");
                 return 0;
             }
         } else{
