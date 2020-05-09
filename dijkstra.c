@@ -16,7 +16,7 @@ void set_known_root_node(MAZE *maze, int index){
 
 /* najdem node z LL ako root node a updatujem mu paht cost */
 void change_path_cost(MAZE *maze, PATH_NODE *path_node, HEAP *heap, int root_path_cost, int root_path_index){
-    // printf("root node id: %d \n", path_node->id);
+
     for (int i = 0; i < maze->nodes_num; i++){
 
         /* najdem pozadovany path node v path (verticalnom smere) */ 
@@ -24,13 +24,19 @@ void change_path_cost(MAZE *maze, PATH_NODE *path_node, HEAP *heap, int root_pat
 
             /* Ak dany path root este nie je objaveny a jeho path cost je vyssia ako aktualna */ 
             if(maze->path[i].known == FALSE && path_node->cost + root_path_cost < maze->path[i].cost){
+                
+                /**
+                 * Ak je predchadzajuci cost infinity, to znamena ze v halde este nie je zaznam toho cost
+                 * ak nie je infinity zanmena z v halde uz je zaznam a preto ho treba zmenit aby nevznikali duplikaty
+                */
+                heap = maze->path[i].cost == INFINITY ? insert_heap_node(heap, i, path_node->cost + root_path_cost)
+                                                      : change_for_cheaper_cost(heap, i, path_node->cost + root_path_cost);
+                
+                /* updatujem ho na lacnejsi cost aj v grafe */
                 maze->path[i].cost = path_node->cost + root_path_cost;
+
+                /* zmenim src node v grafe */
                 maze->path[i].source_path->index_of_src_path_root = root_path_index;
-                heap = insert_heap_node(heap, i, path_node->cost + root_path_cost);
-                // if(root_path_cost == 0){
-                //     // printf("root node id: %d %d\n", path_node->id, i);
-                //     print_heap(heap);
-                // }
             }
 
             return;
@@ -42,11 +48,18 @@ void change_path_cost(MAZE *maze, PATH_NODE *path_node, HEAP *heap, int root_pat
 
 
 /* Prejde linked list od pathroota horizontalne */
-void find_and_update_neighboor(MAZE *maze, PATH_NODE *current_path_node, HEAP *heap, int root_path_cost, int root_path_index){
+void find_and_update_neighboor(MAZE *maze, HEAP *heap, int index){
 
-    while(current_path_node != NULL){
-        change_path_cost(maze, current_path_node, heap, root_path_cost, root_path_index);
-        current_path_node = current_path_node->next;
+    /* prvy sused od path root-a*/
+    PATH_NODE *current = maze->path[index].path_root->next;
+
+    /* path cost momentalny */
+    int root_path_cost = maze->path[index].cost;
+
+    /* prechadzam vsetkych susedov od path-root-a */
+    while(current != NULL){
+        change_path_cost(maze, current, heap, root_path_cost, index);
+        current = current->next;
     }
 }
 
@@ -57,6 +70,7 @@ int check_and_update_src_paths(MAZE *maze, int starting_index){
     for (int i = 0; i < maze->nodes_num; i++){
         if (maze->path[i].known == FALSE){
             for (int j = 0; j < maze->princess_num; j++){
+
                 /* Kontrola ci sa jedna o princeznu - ak ano tak je zle a neviem sa k nim dostat */
                 if(i == maze->princess_index_arr[j]){
                     printf("Zle je, princezna zabednena! %d %d\n", i, maze->princess_index_arr[j]);
@@ -104,15 +118,26 @@ int dijkstra(MAZE *maze, int starting_index){
     heap = init_heap(maze->nodes_num);
     init_starting_vertex(maze, starting_index);
 
-    // printf("maze path root cost: %d\n", maze->path[*index].path_root->cost);
-
-    find_and_update_neighboor(maze, maze->path[starting_index].path_root->next, heap, maze->path[starting_index].cost, starting_index);
+    find_and_update_neighboor(maze, heap, starting_index);
 
     int i = 0;
     /* vyberam kym je nieco v halde */
     while((heap = push_and_pop_min(heap, index)) != NULL){
+        // printf("pred");
+        // print_heap(heap);
+
+        /* funkcia push and pop min mi cez premennu index updatuje index min cost-u cesty a ten oznacim ako known true */
         set_known_root_node(maze, *index);
-        find_and_update_neighboor(maze, maze->path[*index].path_root->next, heap, maze->path[*index].cost, *index);
+
+        /* najdem susedov path roota ktory ma priebezny najmensi cost */
+        find_and_update_neighboor(maze, heap, *index);
+        
+        // printf("po");
+        // print_heap(heap);
+        // if(*index == 54){
+        //     print_heap(heap);
+        //     printf("maze->path[*index].path_root: %d\n", maze->path[*index].path_root->id);
+        // }
     }
 
     if(check_and_update_src_paths(maze, starting_index) == 0){

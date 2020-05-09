@@ -109,7 +109,12 @@ void print_graph(MAZE *maze){
     printf("----- Vypis grafu!! -----\n");
     printf("Number of nodes in path: %d \n", maze->nodes_num);
     printf("Number of princess: %d \n", maze->princess_num);
-    printf("Drak coordinates: [%d, %d] and his index in path: %d\n\n", maze->dragon->position.y, maze->dragon->position.x, maze->dragon->index);
+    printf("Drak coordinates: [%d, %d] and his index in path: %d\n\n", maze->dragon->position.x, maze->dragon->position.y, maze->dragon->index);
+
+
+    for (i = 0; i < maze->princess_num; i++){
+        printf("Princezna %d: [%d, %d]\n",i, maze->path[maze->princess_index_arr[i]].path_root->position.x, maze->path[maze->princess_index_arr[i]].path_root->position.y);
+    }
 
     for (i = 0; i < maze->nodes_num; i++){
         printf("i:%d id: %d path cost: %d known: %d src path node: %d source nodes %d,  ", i, maze->path[i].path_root->id, maze->path[i].cost, maze->path[i].known, maze->path[i].source_path->index_of_src_path_root, maze->path[i].source_path->num_of_src_path_nodes);
@@ -124,9 +129,36 @@ void print_graph(MAZE *maze){
 }
 
 
+void print_final_rescue_princess_path(MAZE *maze, int index_of_cheapest_path){
+    int index_first_princess = maze->princess_rescue[index_of_cheapest_path].permutation_of_princess_indexes[0];
+
+    printf("Cesta od draka [%d, %d], k prvej princezne [%d, %d]\n", 
+        maze->path[maze->dragon->index].path_root->position.x, 
+        maze->path[maze->dragon->index].path_root->position.y, 
+        maze->path[index_first_princess].path_root->position.x, 
+        maze->path[index_first_princess].path_root->position.y
+    );
+
+    for (int i = 1; i < maze->princess_num; i++){
+        printf("Cesta od %d. princezny [%d, %d] ", 
+            i,
+            maze->path[index_first_princess].path_root->position.x, 
+            maze->path[index_first_princess].path_root->position.y
+        );
+        index_first_princess = maze->princess_rescue[index_of_cheapest_path].permutation_of_princess_indexes[i];
+        printf("k %d. princezne [%d, %d]\n", 
+            i+1,
+            maze->path[index_first_princess].path_root->position.x, 
+            maze->path[index_first_princess].path_root->position.y
+        );
+    }
+}
+
+
 /* function printing all posible permutations of finding princess, moreover their cost and path */
 void print_princess_rescue_permutation(MAZE *maze, int factorial){
     printf("\n----- Permutacie postupu hladania princezien -----\n");
+
     for (int i = 0; i < factorial; i++){
         printf("perm %d cost %d: ", i, maze->princess_rescue[i].t);
         for (int j = 0; j < maze->princess_num; j++)
@@ -141,17 +173,6 @@ void print_princess_rescue_permutation(MAZE *maze, int factorial){
 }
 
 
-void print_final_path(MAZE *maze, int *final_array){
-    int i;
-
-    printf("\n----- TOTAL FINAL ARRAY -----\n");
-    for (int i = 0; i <= maze->total_path_lengt; i++)
-        printf("[%d, %d]\n", final_array[2*i+1], final_array[2*i]);
-    printf("\n");
-
-}
-
-
 /* fn to free two dimensional array in dragon path */
 void free_dragon_path(MAZE *maze, int **dragon_path){
     int i;
@@ -163,7 +184,7 @@ void free_dragon_path(MAZE *maze, int **dragon_path){
 
 
 /* Funkcia sa spusti na konci programu a uvolnim pamat pre struct maze */
-void free_maze(MAZE *maze, int factorial){
+void free_maze(MAZE *maze, int factorial, int *total_time){
     PATH_NODE *current, *previous;
     int i;
 
@@ -191,6 +212,7 @@ void free_maze(MAZE *maze, int factorial){
         free(maze->path[i].source_path);
     }
     free(maze->path);
+    free(total_time);
 
     free(maze->princess_rescue);
     free(maze);
@@ -357,7 +379,7 @@ MAZE *load_maze(MAZE *maze, char **mapa, int t){
 
 
 /* Fn for order coordinates of cheapest path to dragon from dijsktra algorithm */
-int **kil_the_dragon(MAZE *maze, int *dlzka_cesty){
+int **kil_the_dragon(MAZE *maze, int *total_time){
     int num_of_src_nodes, src_node_index;
     int **dragon_path;
 
@@ -373,8 +395,9 @@ int **kil_the_dragon(MAZE *maze, int *dlzka_cesty){
     src_node_index = maze->dragon->index;
     PATH_NODE *root_path_node = maze->path[src_node_index].path_root;
 
-    /* k celkovej dlzke pripocitam hodnotu prveho policka v mape, ktore nie je zapocitane v dst node coste */
-    *dlzka_cesty = maze->path[src_node_index].cost + maze->path[0].path_root->cost;
+    /* k celkovemu casu pripocitam hodnotu prveho policka v mape, ktore nie je zapocitane v dst node coste */
+    *total_time = maze->path[src_node_index].cost + maze->path[0].path_root->cost;
+    printf("\nDrak je na suradnici [%d, %d], dlzka cesty k nemu je: %d s casom : %d\n", maze->path[maze->dragon->index].path_root->position.x, maze->path[maze->dragon->index].path_root->position.y, maze->path[maze->dragon->index].source_path->num_of_src_path_nodes, *total_time);
 
     while(--num_of_src_nodes >= 0){
         dragon_path[num_of_src_nodes] = (int *)malloc(2 * sizeof(int));
@@ -424,7 +447,7 @@ void actualize_princess_rescue_path(MAZE *maze, int starting_index, int ending_i
 
 
 /* funkcia vrati index najlacnejsej cesty spomedzi permutacii */
-int cheapest_princess_rescue_path(MAZE *maze, int fatorial, int *dlzka_cesty){
+int cheapest_princess_rescue_path(MAZE *maze, int fatorial, int *total_time){
     int min, min_index, i;
 
     min = maze->princess_rescue[0].t;
@@ -436,7 +459,7 @@ int cheapest_princess_rescue_path(MAZE *maze, int fatorial, int *dlzka_cesty){
             min_index = i;
         }
     }
-    *dlzka_cesty += maze->princess_rescue[min_index].t;
+    *total_time += maze->princess_rescue[min_index].t;
 
     return min_index;
 }
@@ -452,22 +475,19 @@ int *create_and_connect_final_path(MAZE *maze, int **path, int index_of_cheapest
     length_of_cheapest_path_princess_rescue = maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path;
     // printf("length of cheapest path: %d\n", length_of_cheapest_path_princess_rescue);
 
-    for (i = 0; i <= maze->total_path_lengt; i++){
+    for (i = 0; i < maze->total_path_lengt; i++){
         /* Overenie ci index patri ceste k drakovi (if) alebo k ceste k princeznam (else) */
-        if(i <= (maze->total_path_lengt - length_of_cheapest_path_princess_rescue)){
+        if(i < (maze->total_path_lengt - length_of_cheapest_path_princess_rescue)){
             final_array[2 * i] = path[i][0];
             final_array[2 * i + 1] = path[i][1];
         } else {
             final_array[2 * i] = maze->princess_rescue[index_of_cheapest_path].rescue_path_of_princess_permutation
-            [i - (maze->total_path_lengt - length_of_cheapest_path_princess_rescue + 1)][0];
+            [i - (maze->total_path_lengt - length_of_cheapest_path_princess_rescue)][0];
             final_array[2 * i + 1] = maze->princess_rescue[index_of_cheapest_path].rescue_path_of_princess_permutation
-            [i - (maze->total_path_lengt - length_of_cheapest_path_princess_rescue + 1)][1];
+            [i - (maze->total_path_lengt - length_of_cheapest_path_princess_rescue)][1];
             // printf("[%d, %d]\n",final_array[2 * i], final_array[2 * i + 1]);
         }
     }
-
-    /* Nakoniec vlozenie -1 aby som pri vypise vedel kedy skoncit */
-    final_array[2 * i] = -1;
 
     /* Uvolnenie path k drakovi */
     free_dragon_path(maze, path);
@@ -478,10 +498,11 @@ int *create_and_connect_final_path(MAZE *maze, int **path, int index_of_cheapest
 
 int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     int starting_index, factorial, index_of_cheapest_path;
-    int *final_array;
+    int *final_array, *total_time;
     int **path;
 
-    starting_index = 0;
+    total_time = (int *)malloc(sizeof(int));
+    starting_index = *total_time = *dlzka_cesty = 0;
 
     MAZE *maze = init_maze(m, n);
     maze = load_maze(maze, mapa, t);
@@ -494,15 +515,17 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
 
     /* Ak maze == NULL znamena ze k drakovi nevedie cesta */
     if(dijkstra(maze, starting_index) == 0){
-        print_graph(maze);
+        // print_graph(maze);
         printf("K drakovi nevedie cesta\n");
         return NULL;
     }
 
-    path = kil_the_dragon(maze, dlzka_cesty);
+    // print_graph(maze);
+
+    path = kil_the_dragon(maze, total_time);
 
     /* kontrola ak najdena cesta je dlhsia ako t tak som existuje kratsia cesta alebo t je nedosiahnutelne */
-    if(*dlzka_cesty > t){
+    if(*total_time > t){
        printf("Sorry, nedokazal som najst kratsiu cestu ako je t (%d)\n", t);
        return NULL;
     }
@@ -519,6 +542,7 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
 
     /* Vytvorenie roznych permutacii navstivenia princezien podla algoritmu Heap Algorithm (ciastocne prebrany - zdroj pri fn)*/
     heapPermutation(maze, maze->princess_index_arr, maze->princess_num, 0);
+    // print_graph(maze);
 
     /* prechadzam polia moznych permutacii hladania princezien */ 
     for (int m = 0; m < factorial; m++){
@@ -552,20 +576,29 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
     }
 
     /* Najde najlacnejsiu cestu spomedzi permutacii */
-    index_of_cheapest_path = cheapest_princess_rescue_path(maze, factorial, dlzka_cesty);
+    index_of_cheapest_path = cheapest_princess_rescue_path(maze, factorial, total_time);
 
     // printf("total length:  %d\n", maze->total_path_lengt);
     /* K zatial docastnej casovej narocnosti cesty k drakovi pripocitava casovu narocnost hladania princezien */
-    maze->total_path_lengt += (maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path - 1);
+    maze->total_path_lengt += maze->princess_rescue[index_of_cheapest_path].num_princess_rescue_path;
+
+    /* For printing best permutation */
+    print_final_rescue_princess_path(maze, index_of_cheapest_path);
+    /* For printing all possible permutation */
+    // print_princess_rescue_permutation(maze, factorial);
 
     /* Spoji pole pre cestu k drakovi a hladania princezien */
     final_array = create_and_connect_final_path(maze, path, index_of_cheapest_path);
 
+    /* Nastavenie dlzky cesty */
+    *dlzka_cesty = maze->total_path_lengt;
+
+
     /* functions for printing purposes and checks */
     // print_graph(maze);
-    // print_final_path(maze, final_array);
     // print_princess_rescue_permutation(maze, factorial);
+    printf("Najkratsia cesta s casom: %d\n", *total_time);
 
-    free_maze(maze, factorial);
+    free_maze(maze, factorial, total_time);
     return final_array;
 }

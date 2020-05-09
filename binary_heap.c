@@ -45,22 +45,41 @@ HEAP_NODE *find_parent(HEAP *heap, int index){
 }
 
 
-HEAP *clean_in_heap(HEAP *heap, int index_heap_node_need_clean){
+HEAP *clean_in_heap(HEAP *heap, int i){
     HEAP_NODE *parent;
 
-    while(index_heap_node_need_clean > 0 && (parent = find_parent(heap, index_heap_node_need_clean))->value > heap->heap_node[index_heap_node_need_clean].value){
-        swap_heap_nodes(&heap->heap_node[index_heap_node_need_clean], &heap->heap_node[((index_heap_node_need_clean - 1) / 2)]);
-        index_heap_node_need_clean = (index_heap_node_need_clean - 1) / 2;
+    while(i != 0 && heap->heap_node[((i - 1) / 2)].value > heap->heap_node[i].value){
+        /* Vymenim ich v poli */
+        swap_heap_nodes(&heap->heap_node[i], &heap->heap_node[((i - 1) / 2)]);
+        i = (i - 1) / 2;
     }
+
+    // printf("after cleaning\n");
+    // print_heap(heap);
 
     return heap;
 }
 
 
+HEAP *change_for_cheaper_cost(HEAP *heap, int index, int new_path_cost){
+    int i;
+
+    for (i = 0; i < heap->heap_act_size; i++){
+        if(heap->heap_node[i].index == index){
+            heap->heap_node[i].value = new_path_cost;
+            heap = clean_in_heap(heap, i);
+
+            return heap;
+        }
+    }
+
+    printf("change_for_cheaper_cost - nieco je zle lebo som ho nenasiel v halde\n");
+}
+
 HEAP *insert_heap_node(HEAP *heap, int index, int path_cost){
     HEAP_NODE *heap_node = init_heap_node(index, path_cost);
 
-    /* resolution statement */
+    /* resolution statement, checking max heap size */
     if(heap->heap_act_size >= heap->heap_max_size){
         printf("No success insert to heap - ochrana proti preteceniu\n");
         return heap;
@@ -69,7 +88,7 @@ HEAP *insert_heap_node(HEAP *heap, int index, int path_cost){
     int act_index = heap->heap_act_size;
 
     /* vlozim dany heap_node do pola */
-    heap->heap_node[heap->heap_act_size] = *heap_node;
+    heap->heap_node[act_index] = *heap_node;
     heap = clean_in_heap(heap, act_index);
     heap->heap_act_size++;
 
@@ -92,24 +111,26 @@ HEAP *change_value_heap_node(HEAP *heap, int index, int new_value){
 
 void heapifyTtB(HEAP *heap, int index){
     HEAP_NODE *left_child, *right_child;
-    int left = 2 * index + 1;
-    int right = 2 * index + 2;
+    int left, right, helper;
+
+    left = 2 * index + 1;
+    right = 2 * index + 2;
     left_child = &heap->heap_node[left];
     right_child = &heap->heap_node[right];
 
     if((left < heap->heap_act_size && heap->heap_node[index].value > left_child->value) && (right < index && heap->heap_node[index].value > right_child->value)){
         swap_heap_nodes(&heap->heap_node[index], left_child->value < right_child->value ? &heap->heap_node[left] : &heap->heap_node[right]);
         heapifyTtB(heap, left_child->value < right_child->value
-                             ? left_child->value
-                             : right_child->value);
+                             ? left
+                             : right);
     }
     if(left < heap->heap_act_size && heap->heap_node[index].value > left_child->value){
         swap_heap_nodes(&heap->heap_node[index], &heap->heap_node[left]);
-        heapifyTtB(heap, left_child->value);
+        heapifyTtB(heap, left);
     }
     if(right < heap->heap_act_size && heap->heap_node[index].value > right_child->value){
         swap_heap_nodes(&heap->heap_node[index], &heap->heap_node[right]);
-        heapifyTtB(heap, right_child->value);
+        heapifyTtB(heap, right);
     }
 }
 

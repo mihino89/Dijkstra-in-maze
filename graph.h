@@ -94,10 +94,9 @@ MAZE *init_princess_rescue(MAZE *maze, int arr[], int size, int index);
 
 void print_graph(MAZE *maze);
 void print_princess_rescue_permutation(MAZE *maze, int factorial);
-void print_final_path(MAZE *maze, int *final_array);
 
 void free_dragon_path(MAZE *maze, int **dragon_path);
-void free_maze(MAZE *maze, int factorial);
+void free_maze(MAZE *maze, int factorial, int *total_time);
 
 void get_number_of_princess_permutations(int *princess_num);
 void heapPermutation(MAZE *maze, int a[], int size, int index);

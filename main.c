@@ -58,6 +58,18 @@ char **load_map(int y, int x, int map_id){
     case 8:
         f=fopen("./testing_maps/mapa_20x20.txt","r");
         break;
+    case 9:
+        f=fopen("./testing_maps/mapa_7x100.txt","r");
+        break;
+    case 10:
+        f=fopen("./testing_maps/mapa_15x100.txt","r");
+        break;
+    case 11:
+        f=fopen("./testing_maps/mapa_30x100.txt","r");
+        break;
+    case 12:
+        f=fopen("./testing_maps/mapa_25x50.txt","r");
+        break;
     case 15:
         return NULL;
     default:
@@ -85,9 +97,7 @@ void print_path(int *path, int dlzka_cesty){
     int i;
 
     printf("\n---- Konecna postupnost -----\n");
-    printf("Najkratsia cesta s casom: %d\n", dlzka_cesty);
-
-    for (i = 0; i < INFINITY; i++){
+    for (i = 0; i < dlzka_cesty; i++){
         if(path[2*i] == -1  || path[2*i+1] == -1)
             break;
         printf("[%d, %d]\n", path[2 * i + 1], path[2 * i]);
@@ -123,6 +133,10 @@ void testing_enviroment(){
     printf("\t- 6. Zakladny test (cesta k drakovi cez princeznu) 3x3\n");
     printf("\t- 7. Zakladny test (cesta k drakovi cez princeznu (4 P)) 5x5\n");
     printf("\t- 8. The real maze! 20x20\n");
+    printf("\t- 9. Zakladny test 7x100\n");
+    printf("\t- 10. Zakladny test 15x100\n");
+    printf("\t- 11. Zakladny test 30x100 - PADA NA CHYBE S CORRUPTED SIZE\n");
+    printf("\t- 12. Zakladny test 25x50\n");
     printf("\t- 15. Nechcem uz testovat\n");
 
     printf("Test cislo: ");
@@ -166,7 +180,27 @@ void testing_enviroment(){
         break;
     case 8:
         y = x = 20;
-        t = 20000;
+        t = 95;
+        break;
+    case 9:
+        y = 7;
+        x = 100;
+        t = 28;
+        break;
+    case 10:
+        y = 15;
+        x = 100;
+        t = 28;
+        break;
+    case 11:
+        y = 30;
+        x = 100;
+        t = 280;
+        break;
+    case 12:
+        y = 25;
+        x = 50;
+        t = 280;
         break;
     default:
         break;
@@ -189,5 +223,5 @@ int main(int argc, char const *argv[]){
 
 
 /**
- * TODO -- program pada ak n je vacsie ako 10? - bug je v ideckach potom lebo [0,11] = [0,1] a to nechcem 
+ * TODO -- skusit 100x100 na jednej princeznej...
 */
