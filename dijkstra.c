@@ -65,11 +65,11 @@ void find_and_update_neighboor(MAZE *maze, HEAP *heap, int index){
 
 
 int check_and_update_src_paths(MAZE *maze, int starting_index){
-    int index_counter;
+    int index_counter, i, j;
 
-    for (int i = 0; i < maze->nodes_num; i++){
+    for (i = 0; i < maze->nodes_num; i++){
         if (maze->path[i].known == FALSE){
-            for (int j = 0; j < maze->princess_num; j++){
+            for (j = 0; j < maze->princess_num; j++){
 
                 /* Kontrola ci sa jedna o princeznu - ak ano tak je zle a neviem sa k nim dostat */
                 if(i == maze->princess_index_arr[j]){

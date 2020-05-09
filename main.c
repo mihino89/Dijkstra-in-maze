@@ -70,7 +70,16 @@ char **load_map(int y, int x, int map_id){
     case 12:
         f=fopen("./testing_maps/mapa_25x50.txt","r");
         break;
+    case 13:
+        f=fopen("./testing_maps/mapa_50x50.txt","r");
+        break;
+    case 14:
+        f=fopen("./testing_maps/mapa_6x6.txt","r");
+        break;
     case 15:
+        f=fopen("./testing_maps/mapa_7x7.txt","r");
+        break;
+    case 16:
         return NULL;
     default:
         printf("Nenasiel som subor mapy\n");
@@ -124,20 +133,23 @@ void testing_enviroment(){
 
     printf("======= Vitajte v testovacom prostredi algoritmu dijkstra, minimalnej haldy a heap algoritmu! =======\n");
     printf("Prosim vyberte si test (cislo 0-1):\n");
-    printf("\t- 0. Zakladny test 4x4\n");
-    printf("\t- 1. Zakladny test 10x10\n");
-    printf("\t- 2. Zakladny test 100x100 - NEFUNGUJE!\n");
+    printf("\t- 0. Test 4x4\n");
+    printf("\t- 1. Test 10x10\n");
+    printf("\t- 2. Test 100x100 - NEFUNGUJE!\n");
     printf("\t- 3. Test na hladanie optimalnej cesty zachrany princezien 5x4\n");
     printf("\t- 4. Test v bludisku sa nenachadza ziadna princezna 2x7\n");
-    printf("\t- 5. Zakladny test (cesta k drakovi cez princeznu) 5x15\n");
-    printf("\t- 6. Zakladny test (cesta k drakovi cez princeznu) 3x3\n");
-    printf("\t- 7. Zakladny test (cesta k drakovi cez princeznu (4 P)) 5x5\n");
+    printf("\t- 5. Test (cesta k drakovi cez princeznu) 5x15\n");
+    printf("\t- 6. Test (cesta k drakovi cez princeznu) 3x3\n");
+    printf("\t- 7. Test (cesta k drakovi cez princeznu (4 P)) 5x5\n");
     printf("\t- 8. The real maze! 20x20\n");
-    printf("\t- 9. Zakladny test 7x100\n");
-    printf("\t- 10. Zakladny test 15x100\n");
-    printf("\t- 11. Zakladny test 30x100 - PADA NA CHYBE S CORRUPTED SIZE\n");
-    printf("\t- 12. Zakladny test 25x50\n");
-    printf("\t- 15. Nechcem uz testovat\n");
+    printf("\t- 9. Test 7x100\n");
+    printf("\t- 10. Test 15x100\n");
+    printf("\t- 11. Test 30x100\n");
+    printf("\t- 12. Test 25x50 - \n");
+    printf("\t- 13. Zabednena princezna 50x50 - Bug\n");
+    printf("\t- 14. Test 6X6 - zabedneny drak\n");
+    printf("\t- 15. Test 7X7 - zabednena princezna\n");
+    printf("\t- 16. Nechcem uz testovat\n");
 
     printf("Test cislo: ");
     scanf("%d", &choice);
@@ -195,12 +207,24 @@ void testing_enviroment(){
     case 11:
         y = 30;
         x = 100;
-        t = 280;
+        t = 28;
         break;
     case 12:
         y = 25;
         x = 50;
-        t = 280;
+        t = 28;
+        break;
+    case 13:
+        y = x = 50;
+        t = 300;
+        break;
+    case 14:
+        y = x = 6;
+        t = 300;
+        break;
+    case 15:
+        y = x = 7;
+        t = 300;
         break;
     default:
         break;

@@ -113,7 +113,6 @@ void print_graph(MAZE *maze){
         maze->dragon->position.x, maze->dragon->position.y, maze->dragon->index
     );
 
-
     for (i = 0; i < maze->princess_num; i++){
         printf("Princezna %d: [%d, %d]\n",
             i, 
@@ -344,19 +343,23 @@ MAZE *create_vertex(MAZE *maze, PATH_NODE *new_node, char **map, int index){
 
     /* smer - Vychod */
     neighboor_value = check_node_neighbors(maze, map, x + 1, y);
-    maze = add_neighboor_to_path(maze, new_node, neighboor_value, index, y, (x + 1));
+    maze = neighboor_value != FALSE ? add_neighboor_to_path(maze, new_node, neighboor_value, index, y, (x + 1))
+                                    : maze;
 
     /* smer - Zapad */
     neighboor_value = check_node_neighbors(maze, map, x - 1, y);
-    maze = add_neighboor_to_path(maze, new_node, neighboor_value, index, y, (x - 1));
-  
+    maze = neighboor_value != FALSE ? add_neighboor_to_path(maze, new_node, neighboor_value, index, y, (x - 1))
+                                    : maze;
+
     /* smer - Sever */
     neighboor_value = check_node_neighbors(maze, map, x, y + 1);
-    maze = add_neighboor_to_path(maze, new_node, neighboor_value, index, (y + 1), x);
-   
+    maze = neighboor_value != FALSE ? add_neighboor_to_path(maze, new_node, neighboor_value, index, (y + 1), x)
+                                    : maze;
+
     /* smer - Juh */
     neighboor_value = check_node_neighbors(maze, map, x, y - 1);
-    maze = add_neighboor_to_path(maze, new_node, neighboor_value, index, (y - 1), x);
+    maze = neighboor_value != FALSE ? add_neighboor_to_path(maze, new_node, neighboor_value, index, (y - 1), x)
+                                    : maze;
 
     return maze;
 }
@@ -380,10 +383,9 @@ MAZE *load_maze(MAZE *maze, char **mapa, int t){
                     y, x);
 
                 /* Saving index of the princess */
-                if(mapa[y][x] == PRINC){
+                if(mapa[y][x] == PRINC)
                     maze->princess_index_arr[maze->princess_num++] = maze->nodes_num;
-                }
-
+                
                 /* Saving dragon as a struct */
                 else if(mapa[y][x] == DRAG){
                     drak = init_dragon(t, maze->nodes_num, y, x);
@@ -545,7 +547,7 @@ int *zachran_princezne(char **mapa, int n, int m, int t, int *dlzka_cesty){
 
     /* Ak maze == NULL znamena ze k drakovi nevedie cesta */
     if(dijkstra(maze, starting_index) == 0){
-        printf("K drakovi nevedie cesta\n");
+        printf("K drakovi alebo k niektorej z princezien nevedie cesta\n");
         return NULL;
     }
 
