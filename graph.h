@@ -55,7 +55,6 @@ typedef struct path{
     int cost;
     int known;
     SOURCE_PATH *source_path;
-    // int *src_path_nodes;
     PATH_NODE *path_root;
 } PATH;
 
@@ -79,6 +78,7 @@ typedef struct maze{
     PRINCESS_RESCUE *princess_rescue;
     PATH *path;
 } MAZE;
+
 
 SOURCE_PATH *init_source_path(int size);
 PATH *init_path(int maze_width, int maze_height);

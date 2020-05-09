@@ -120,24 +120,14 @@ int dijkstra(MAZE *maze, int starting_index){
 
     find_and_update_neighboor(maze, heap, starting_index);
 
-    int i = 0;
     /* vyberam kym je nieco v halde */
     while((heap = push_and_pop_min(heap, index)) != NULL){
-        // printf("pred");
-        // print_heap(heap);
 
         /* funkcia push and pop min mi cez premennu index updatuje index min cost-u cesty a ten oznacim ako known true */
         set_known_root_node(maze, *index);
 
         /* najdem susedov path roota ktory ma priebezny najmensi cost */
         find_and_update_neighboor(maze, heap, *index);
-        
-        // printf("po");
-        // print_heap(heap);
-        // if(*index == 54){
-        //     print_heap(heap);
-        //     printf("maze->path[*index].path_root: %d\n", maze->path[*index].path_root->id);
-        // }
     }
 
     if(check_and_update_src_paths(maze, starting_index) == 0){
