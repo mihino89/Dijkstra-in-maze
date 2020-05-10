@@ -148,7 +148,7 @@ void print_path(int *path, int dlzka_cesty){
     for (i = 0; i < dlzka_cesty; i++){
         if(path[2*i] == -1  || path[2*i+1] == -1)
             break;
-        printf("[%d, %d]\n", path[2 * i + 1], path[2 * i]);
+        printf("%d  %d\n", path[2 * i + 1], path[2 * i]);
     }
 }
 
