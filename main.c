@@ -38,46 +38,55 @@ char **load_map(int y, int x, int map_id){
         f=fopen("./testing_maps/mapa_4x4_variant1P.txt","r");
         break;
     case 2:
-        f=fopen("./testing_maps/mapa_4x4.txt","r");
-        break;
-    case 3:
         f=fopen("./testing_maps/mapa_5x4.txt","r");
         break;
-    case 4:
-        f=fopen("./testing_maps/mapa_2x7.txt","r");
-        break;
-    case 5:
-        f=fopen("./testing_maps/mapa_5x15.txt","r");
-        break;
-    case 6:
-        f=fopen("./testing_maps/mapa_3x3.txt","r");
-        break;
-    case 7:
-        f=fopen("./testing_maps/mapa_5x5.txt","r");
-        break;
-    case 8:
-        f=fopen("./testing_maps/mapa_20x20.txt","r");
-        break;
-    case 9:
-        f=fopen("./testing_maps/mapa_7x100.txt","r");
-        break;
-    case 10:
-        f=fopen("./testing_maps/mapa_15x100.txt","r");
-        break;
-    case 11:
-        f=fopen("./testing_maps/mapa_30x100.txt","r");
-        break;
-    case 12:
-        f=fopen("./testing_maps/mapa_25x50.txt","r");
-        break;
-    case 13:
-        f=fopen("./testing_maps/mapa_50x50.txt","r");
-        break;
-    case 14:
+    case 3:
         f=fopen("./testing_maps/mapa_6x6.txt","r");
         break;
+    case 4:
+        f=fopen("./testing_maps/mapa_7x100.txt","r");
+        break;
+    case 5:
+        f=fopen("./testing_maps/mapa_7x100_variant4P.txt","r");
+        break;
+    case 6:
+        f=fopen("./testing_maps/mapa_20x20_variant1P.txt","r");
+        break;
+    case 7:
+        f=fopen("./testing_maps/mapa_20x20.txt","r");
+        break;
+    case 8:
+        f=fopen("./testing_maps/mapa_21x21.txt","r");
+        break;
+    case 9:
+        f=fopen("./testing_maps/mapa_21x21_variant4P.txt","r");
+        break;
+    case 10:
+        f=fopen("./testing_maps/mapa_25x50.txt","r");
+        break;
+    case 11:
+        f=fopen("./testing_maps/mapa_25x50_variant5P.txt","r");
+        break;
+    case 12:
+        f=fopen("./testing_maps/mapa_15x100.txt","r");
+        break;
+    case 13:
+        f=fopen("./testing_maps/mapa_15x100_variant4P.txt","r");
+        break;
+    case 14:
+        f=fopen("./testing_maps/mapa_30x100.txt","r");
+        break;
     case 15:
-        f=fopen("./testing_maps/mapa_7x7.txt","r");
+        f=fopen("./testing_maps/mapa_30x100_variant5P.txt","r");
+        break;
+    case 16:
+        f=fopen("./testing_maps/mapa_50x50.txt","r");
+        break;
+    case 17:
+        f=fopen("./testing_maps/mapa_50x50_variant4P.txt","r");
+        break;
+    case 18:
+        f=fopen("./testing_maps/mapa_100x100_variant3P.txt","r");
         break;
     case 19:
         f=fopen("./testing_maps/mapa_100x100.txt","r");
@@ -109,7 +118,7 @@ char **load_map(int y, int x, int map_id){
     case 28:
         f=fopen("./testing_maps/mapa_5x5_nepriechod.txt","r");
         break;
-    case 16:
+    case 29:
         return NULL;
     default:
         printf("Nenasiel som subor mapy\n");
@@ -164,21 +173,24 @@ void testing_enviroment(){
     printf("======= Vitajte v testovacom prostredi algoritmu dijkstra, minimalnej haldy a heap algoritmu! =======\n");
     printf("Prosim vyberte si test (cislo 0-1):\n");
     printf("\t- 0. Test ukazkovy 10x10 - 3P\n");
-    printf("\t- 1. Test zakladny 4x4 - 1P\n");
-    printf("\t- 2. Test zakladny 4x4 - 3P\n");
-    //tu pokracuj v upratani testov 
-    printf("\t- 3. Test na hladanie optimalnej cesty zachrany princezien 5x4\n");
-    printf("\t- 5. Test (cesta k drakovi cez princeznu) 5x15\n");
-    printf("\t- 6. Test (cesta k drakovi cez princeznu) 3x3\n");
-    printf("\t- 7. Test (cesta k drakovi cez princeznu (4 P)) 5x5\n");
-    printf("\t- 8. The real maze! 20x20\n");
-    printf("\t- 9. Test 7x100\n");
-    printf("\t- 10. Test 15x100\n");
-    printf("\t- 11. Test 30x100\n");
-    printf("\t- 12. Test 25x50 - \n");
-    printf("\t- 13. Zabednena princezna 50x50 - Bug\n");
-    printf("\t- 14. Test 6X6 - zabedneny drak\n");
-    printf("\t- 15. Test 7X7 - zabednena princezna\n");
+    printf("\t- 1. Test maly 4x4 - 1P\n");
+    printf("\t- 2. Test maly 5x4 (najlacnejsia cesta rozhodnutie)- 3P\n");
+    printf("\t- 3. Test maly 6x6 - 5P\n");
+    printf("\t- 4. Test maly 7x100 - 2P\n");
+    printf("\t- 5. Test maly 7x100 - 4P\n");
+    printf("\t- 6. Test stredny 20x20 - 1P\n");
+    printf("\t- 7. Test stredny 20x20 - 5P\n");
+    printf("\t- 8. Test stredny 21x21 - 2P\n");
+    printf("\t- 9. Test stredny 21x21 - 4P\n");
+    printf("\t- 10. Test stredny 25x50 - 3P\n");
+    printf("\t- 11. Test stredny 25x50 - 5P\n");
+    printf("\t- 12. Test stredny 15x100 - 1P\n");
+    printf("\t- 13. Test stredny 15x100 - 4P\n");
+    printf("\t- 14. Test velky 30x100 - 3P\n");
+    printf("\t- 15. Test velky 30x100 - 5P\n");
+    printf("\t- 16. Test velky 50x50 - 2P\n");
+    printf("\t- 17. Test velky 50x50 - 4P\n");
+    printf("\t- 18. Test velky 100x100 - 3P\n");
     printf("\t- 19. Test velky 100x100 - 5P\n");
     printf("\t- 20. Test krajnych pripadov 1x1 - ziadna princezna ani drak\n");
     printf("\t- 21. Test krajnych pripadov 1x1 - ziadna princezna iba drak\n");
@@ -189,7 +201,7 @@ void testing_enviroment(){
     printf("\t- 26. Test krajnych pripadov 15x15 - 2 princezne a drak zablokovane horizontalne\n");
     printf("\t- 27. Test krajnych pripadov 7x8 - 4 princezne a ziadny drak\n");
     printf("\t- 28. Test krajnych pripadov 5x5 - nepriechodna sachovnica k princeznej\n");
-    printf("\t- 16. Nechcem uz testovat\n");
+    printf("\t- 29. Nechcem uz testovat\n");
 
     printf("Test cislo: ");
     scanf("%d", &choice);
@@ -204,69 +216,85 @@ void testing_enviroment(){
         t = 6;
         break;
     case 2:
-        y = x = 4;
-        t = 6;
-        break;
-    case 3:
         y = 5;
         x = 4;
-        t = 11;
+        t = 3;
+        break;
+    case 3:
+        y = x = 6;
+        t = 17;
         break;
     case 4:
-       
+        y = 7;
+        x = 100;
+        t = 27;
         break;
     case 5:
-        y = 5;
-        x = 15;
-        t = 100;
+        y = 7;
+        x = 100;
+        t = 27;
         break;
     case 6:
-        y = x = 3;
-        t = 8;
-        break;
-    case 7:
-        y = x = 5;
-        t = 74;
-        break;
-    case 8:
         y = x = 20;
         t = 95;
         break;
+    case 7:
+        y = x = 20;
+        t = 95;
+        break;
+    case 8:
+        y = x = 21;
+        t = 55;
+        break;
     case 9:
-        y = 7;
-        x = 100;
-        t = 28;
+        y = x = 21;
+        t = 55;
         break;
     case 10:
+        y = 25;
+        x = 50;
+        t = 65;
+        break;
+    case 11:
+        y = 25;
+        x = 50;
+        t = 65;
+        break;
+    case 12:
         y = 15;
         x = 100;
         t = 28;
         break;
-    case 11:
+    case 13:
+        y = 15;
+        x = 100;
+        t = 28;
+        break;
+    case 14:
         y = 30;
         x = 100;
         t = 28;
         break;
-    case 12:
-        y = 25;
-        x = 50;
+    case 15:
+        y = 30;
+        x = 100;
         t = 28;
         break;
-    case 13:
+    case 16:
         y = x = 50;
-        t = 300;
+        t = 67;
         break;
-    case 14:
-        y = x = 6;
-        t = 300;
+    case 17:
+        y = x = 50;
+        t = 67;
         break;
-    case 15:
-        y = x = 7;
-        t = 300;
+    case 18:
+        y = x = 100;
+        t = 28;
         break;
     case 19:
         y = x = 100;
-        t = 1200;
+        t = 28;
         break;
     case 20:
         y = x = 1;
@@ -327,8 +355,3 @@ int main(int argc, char const *argv[]){
 
     return 0;
 }
-
-
-/**
- * TODO -- skusit 100x100 na jednej princeznej...
-*/
