@@ -45,6 +45,7 @@ HEAP_NODE *find_parent(HEAP *heap, int index){
 }
 
 
+/* reordering and cleaning heap in way of min heap rules */
 HEAP *clean_in_heap(HEAP *heap, int i){
     HEAP_NODE *parent;
 
@@ -54,13 +55,11 @@ HEAP *clean_in_heap(HEAP *heap, int i){
         i = (i - 1) / 2;
     }
 
-    // printf("after cleaning\n");
-    // print_heap(heap);
-
     return heap;
 }
 
 
+/* fn for change cost which already is for smaller one */
 HEAP *change_for_cheaper_cost(HEAP *heap, int index, int new_path_cost){
     int i;
 
@@ -75,6 +74,7 @@ HEAP *change_for_cheaper_cost(HEAP *heap, int index, int new_path_cost){
 
     printf("change_for_cheaper_cost - nieco je zle lebo som ho nenasiel v halde\n");
 }
+
 
 HEAP *insert_heap_node(HEAP *heap, int index, int path_cost){
     HEAP_NODE *heap_node = init_heap_node(index, path_cost);
@@ -118,16 +118,33 @@ void heapifyTtB(HEAP *heap, int index){
     left_child = &heap->heap_node[left];
     right_child = &heap->heap_node[right];
 
-    if((left < heap->heap_act_size && heap->heap_node[index].value > left_child->value) && (right < index && heap->heap_node[index].value > right_child->value)){
-        swap_heap_nodes(&heap->heap_node[index], left_child->value < right_child->value ? &heap->heap_node[left] : &heap->heap_node[right]);
+    /** 
+    * left and right parent as well are optionall (have a bigger cost),
+    * choose with smaller cost between tham and replace with child
+    */
+    if((left < heap->heap_act_size && heap->heap_node[index].value > left_child->value) && 
+        (right < index && heap->heap_node[index].value > right_child->value)){
+
+        swap_heap_nodes(&heap->heap_node[index], left_child->value < right_child->value
+                                                     ? &heap->heap_node[left]
+                                                     : &heap->heap_node[right]);
+
         heapifyTtB(heap, left_child->value < right_child->value
                              ? left
                              : right);
     }
+
+    /** 
+    * left parent have a bigger cost, replace with child
+    */
     if(left < heap->heap_act_size && heap->heap_node[index].value > left_child->value){
         swap_heap_nodes(&heap->heap_node[index], &heap->heap_node[left]);
         heapifyTtB(heap, left);
     }
+
+    /** 
+    * right parent have a bigger cost, replace with child
+    */
     if(right < heap->heap_act_size && heap->heap_node[index].value > right_child->value){
         swap_heap_nodes(&heap->heap_node[index], &heap->heap_node[right]);
         heapifyTtB(heap, right);
@@ -135,6 +152,7 @@ void heapifyTtB(HEAP *heap, int index){
 }
 
 
+/* vyberie najmensi cost z haldy (teda root) a pop-ne ho, nalsedne uprace haldu */
 HEAP *push_and_pop_min(HEAP *heap, int *path_index_of_min){
     *path_index_of_min = get_path_index_of_min(heap);
 
